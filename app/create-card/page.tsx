@@ -1,0 +1,361 @@
+"use client";
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { format } from "date-fns";
+import axios from "axios";
+
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+// 👇 import your card component
+import EmployeeCard from "@/components/ui/cardPreview";
+
+// ✅ Validation Schema
+const formSchema = z.object({
+  cardNo: z.string().min(1, "Card number is required"),
+  dateOfIssue: z.date(),
+  employeeName: z.string().min(1, "Employee name is required"),
+  fatherName: z.string().min(1, "Father name is required"),
+  designation: z.string().min(1, "Designation is required"),
+  contractor: z.string().min(1, "Contractor is required"),
+  adharCardNumber: z.string().length(12, "Aadhaar must be 12 digits"),
+  validTill: z.date(),
+  mobileNumber: z.string().length(10, "Mobile must be 10 digits"),
+  address: z.string().min(1, "Address is required"),
+  photo: z.any().optional(),
+});
+
+export default function CreateCardPage() {
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [cardData, setCardData] = useState<any>(null);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      cardNo: "",
+      dateOfIssue: undefined,
+      employeeName: "",
+      fatherName: "",
+      designation: "",
+      contractor: "",
+      adharCardNumber: "",
+      validTill: undefined,
+      mobileNumber: "",
+      address: "",
+    },
+  });
+
+  // ✅ Submit Handler with API Integration
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const formData = new FormData();
+
+      // append text fields
+      Object.entries(values).forEach(([key, value]) => {
+        if (value instanceof Date) {
+          formData.append(key, value.toISOString());
+        } else if (value && key !== "photo") {
+          formData.append(key, value as string);
+        }
+      });
+
+      // append file
+      if (values.photo instanceof File) {
+        formData.append("file", values.photo);
+      }
+
+      // call backend
+      const response = await axios.post(
+        "http://localhost:3000/card/create",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      const createdCard = response.data;
+
+      // fetch card details
+      const cardResponse = await axios.get(
+        `http://localhost:3000/card/${createdCard._id}`
+      );
+
+      setCardData(cardResponse.data);
+      alert("✅ Card created successfully!");
+    } catch (error: any) {
+      console.error("Error creating card:", error);
+      alert("❌ Failed to create card. Check console.");
+    }
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto p-8 bg-white rounded-2xl shadow-lg border">
+      <h2 className="text-2xl font-bold mb-8">Create Employee Card</h2>
+
+      {/* 🔹 Card Form */}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
+          {/* --- Personal Info Section --- */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+              Personal Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="cardNo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Card No</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter card number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="dateOfIssue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date of Issue</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start"
+                        >
+                          {field.value
+                            ? format(field.value, "PPP")
+                            : "Pick a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="employeeName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Employee Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter employee name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="fatherName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Father Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter father name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+
+          {/* --- Work Info Section --- */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+              Work Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="designation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Designation</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter designation" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="contractor"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contractor</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter contractor name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="adharCardNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Aadhaar Card Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="12-digit Aadhaar number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="validTill"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Valid Till</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start"
+                        >
+                          {field.value
+                            ? format(field.value, "PPP")
+                            : "Pick a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+
+          {/* --- Contact Info Section --- */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+              Contact Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="mobileNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mobile Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="10-digit mobile number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Address</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Enter address"
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+
+          {/* --- Upload Section --- */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4 border-b pb-2">Photo</h3>
+            <FormField
+              control={form.control}
+              name="photo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Upload Photo</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          field.onChange(file);
+                          const reader = new FileReader();
+                          reader.onload = () =>
+                            setSelectedPhoto(reader.result as string);
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {selectedPhoto && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-500 mb-1">Preview:</p>
+                <img
+                  src={selectedPhoto}
+                  alt="Preview"
+                  className="w-32 h-32 object-cover rounded-md border"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Submit */}
+          <div className="flex justify-end">
+            <Button type="submit" className="px-6">
+              Create Card
+            </Button>
+          </div>
+        </form>
+      </Form>
+
+      {/* 🔹 Show Aadhaar-style Card after submit */}
+      {cardData && <EmployeeCard cardData={cardData} />}
+    </div>
+  );
+}
