@@ -106,7 +106,7 @@ export default function CreateCardPage() {
 
       setCardData(response.data);
       alert("✅ Card created successfully!");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error creating card:", error);
       alert("❌ Failed to create card. Check console.");
     } finally {
