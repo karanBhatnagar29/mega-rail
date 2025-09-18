@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import axios from "axios";
+import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +26,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-// 👇 import your card component
 import EmployeeCard from "@/components/ui/cardPreview";
 
 // ✅ Validation Schema
@@ -41,11 +41,18 @@ const formSchema = z.object({
   mobileNumber: z.string().length(10, "Mobile must be 10 digits"),
   address: z.string().min(1, "Address is required"),
   photo: z.any().optional(),
+  divisionName: z.string().min(1, "Division name is required"),
+  loaNumber: z.string().min(1, "LOA number is required"),
+  profileName: z.string().min(1, "Profile name is required"),
+
+  // 🔹 New field
+  description: z.string().optional(),
 });
 
 export default function CreateCardPage() {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [cardData, setCardData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,12 +67,18 @@ export default function CreateCardPage() {
       validTill: undefined,
       mobileNumber: "",
       address: "",
+      divisionName: "NORTH WESTERN RAILWAY JODHPUR DIVISION",
+      loaNumber: "LOA NO. 02 of 2023-24/010010700779589",
+      profileName: "M/s. Megarail Power Projects LLP",
+      description: "Valid for Railway station, Yard and Coaching Depot of JU, BME BGKT with tools and equipments", // 🔹 default empty
     },
   });
 
-  // ✅ Submit Handler with API Integration
+  // ✅ Submit Handler
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      setLoading(true);
+
       const formData = new FormData();
 
       // append text fields
@@ -82,25 +95,19 @@ export default function CreateCardPage() {
         formData.append("file", values.photo);
       }
 
-      // call backend
       const response = await axios.post(
         "http://localhost:3000/card/create",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
-      const createdCard = response.data;
-
-      // fetch card details
-      const cardResponse = await axios.get(
-        `http://localhost:3000/card/${createdCard._id}`
-      );
-
-      setCardData(cardResponse.data);
+      setCardData(response.data);
       alert("✅ Card created successfully!");
     } catch (error: any) {
       console.error("Error creating card:", error);
       alert("❌ Failed to create card. Check console.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -108,7 +115,6 @@ export default function CreateCardPage() {
     <div className="max-w-4xl mx-auto p-8 bg-white rounded-2xl shadow-lg border">
       <h2 className="text-2xl font-bold mb-8">Create Employee Card</h2>
 
-      {/* 🔹 Card Form */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
           {/* --- Personal Info Section --- */}
@@ -222,6 +228,45 @@ export default function CreateCardPage() {
               />
               <FormField
                 control={form.control}
+                name="divisionName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Division Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter division name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="loaNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>LOA Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter LOA number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="profileName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Profile Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter profile name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="adharCardNumber"
                 render={({ field }) => (
                   <FormItem>
@@ -304,6 +349,30 @@ export default function CreateCardPage() {
             </div>
           </div>
 
+          {/* --- Description Section --- */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+              Additional Information
+            </h3>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Enter description or notes"
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
           {/* --- Upload Section --- */}
           <div>
             <h3 className="text-lg font-semibold mb-4 border-b pb-2">Photo</h3>
@@ -347,14 +416,20 @@ export default function CreateCardPage() {
 
           {/* Submit */}
           <div className="flex justify-end">
-            <Button type="submit" className="px-6">
-              Create Card
+            <Button type="submit" className="px-6" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Card"
+              )}
             </Button>
           </div>
         </form>
       </Form>
 
-      {/* 🔹 Show Aadhaar-style Card after submit */}
       {cardData && <EmployeeCard cardData={cardData} />}
     </div>
   );

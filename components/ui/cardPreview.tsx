@@ -10,35 +10,40 @@ export default function EmployeeCard({ cardData }: { cardData: any }) {
       {/* FRONT SIDE */}
       <div className="w-[420px] bg-white border-2 border-gray-400 rounded-xl shadow-lg overflow-hidden">
         {/* Header */}
-        <div className="bg-white text-center px-3 py-2 border-b relative flex items-center justify-between">
-          <Image
-            src="/mega_rail.png"
-            alt="Logo Left"
-            width={35}
-            height={35}
-            className="absolute left-2 top-1"
-          />
-          <div className="flex-1">
-            <h3 className="text-xs font-bold uppercase text-blue-800">
-              NORTH WESTERN RAILWAY JODHPUR DIVISION
+        <div className="bg-white px-3 py-2 border-b flex items-center">
+          {/* Left Logo */}
+          <div className="w-16 h-16 flex items-center justify-center shrink-0">
+            <Image
+              src="/mega_rail.png"
+              alt="Logo Left"
+              width={64}
+              height={64}
+              className="object-contain max-w-full max-h-full"
+            />
+          </div>
+
+          {/* Title & Info */}
+          <div className="flex-1 text-center px-2 overflow-hidden">
+            <h3 className="text-[10.5px] font-bold uppercase text-blue-800 whitespace-nowrap text-ellipsis">
+              {cardData.divisionName}
             </h3>
-            <p className="text-[10px] text-gray-600">
-              LOA NO. 02 of 2023-24/010010070079589
-            </p>
-            <p className="font-semibold text-sm">
-              M/s. Megarail Power Projects LLP
-            </p>
+            <p className="text-[10px] text-gray-600">{cardData.loaNumber}</p>
+            <p className="font-semibold text-sm">{cardData.profileName}</p>
             <div className="bg-red-600 text-white text-xs font-bold py-1 rounded-md mt-1 inline-block px-3">
               IDENTITY CARD
             </div>
           </div>
-          <Image
-            src="/mega_rail.png"
-            alt="Logo Right"
-            width={35}
-            height={35}
-            className="absolute right-2 top-1"
-          />
+
+          {/* Right Logo */}
+          <div className="w-16 h-16 flex items-center justify-center shrink-0">
+            <Image
+              src="/railway_logo.png"
+              alt="Logo Right"
+              width={50}
+              height={64}
+              className="object-contain max-w-full max-h-full"
+            />
+          </div>
         </div>
 
         {/* Content */}
@@ -66,30 +71,24 @@ export default function EmployeeCard({ cardData }: { cardData: any }) {
           </div>
 
           {/* Details */}
-          <div className="text-[12px] space-y-1">
-            <p>
-              <span className="font-semibold">Card No:</span> {cardData.cardNo}
-            </p>
-            <p>
-              <span className="font-semibold">Date Issue:</span>{" "}
-              {format(new Date(cardData.dateOfIssue), "dd/MM/yyyy")}
-            </p>
-            <p>
-              <span className="font-semibold">Employee:</span>{" "}
-              {cardData.employeeName}
-            </p>
-            <p>
-              <span className="font-semibold">Father:</span>{" "}
-              {cardData.fatherName}
-            </p>
-            <p>
-              <span className="font-semibold">Designation:</span>{" "}
-              {cardData.designation}
-            </p>
-            <p>
-              <span className="font-semibold">Contractor:</span>{" "}
-              {cardData.contractor}
-            </p>
+          <div className="text-[12px] grid grid-cols-2 gap-x-2 gap-y-1 flex-1">
+            <div className="font-semibold">Card No:</div>
+            <div>{cardData.cardNo}</div>
+
+            <div className="font-semibold">Date Issue:</div>
+            <div>{format(new Date(cardData.dateOfIssue), "dd/MM/yyyy")}</div>
+
+            <div className="font-semibold">Employee:</div>
+            <div>{cardData.employeeName}</div>
+
+            <div className="font-semibold">Father:</div>
+            <div>{cardData.fatherName}</div>
+
+            <div className="font-semibold">Designation:</div>
+            <div>{cardData.designation}</div>
+
+            <div className="font-semibold">Contractor:</div>
+            <div>{cardData.contractor}</div>
           </div>
         </div>
 
@@ -102,20 +101,20 @@ export default function EmployeeCard({ cardData }: { cardData: any }) {
 
       {/* BACK SIDE */}
       <div className="w-[420px] bg-white border-2 border-gray-400 rounded-xl shadow-lg overflow-hidden p-4 text-[12px]">
-        <p>
-          <span className="font-semibold">Aadhaar:</span>{" "}
-          {cardData.adharCardNumber}
-        </p>
-        <p>
-          <span className="font-semibold">Valid Till:</span>{" "}
-          {format(new Date(cardData.validTill), "dd/MM/yyyy")}
-        </p>
-        <p>
-          <span className="font-semibold">Mobile:</span> {cardData.mobileNumber}
-        </p>
-        <p>
-          <span className="font-semibold">Address:</span> {cardData.address}
-        </p>
+        {/* Back Details aligned */}
+        <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+          <div className="font-semibold">Aadhaar:</div>
+          <div>{cardData.adharCardNumber}</div>
+
+          <div className="font-semibold">Valid Till:</div>
+          <div>{format(new Date(cardData.validTill), "dd/MM/yyyy")}</div>
+
+          <div className="font-semibold">Mobile:</div>
+          <div>{cardData.mobileNumber}</div>
+
+          <div className="font-semibold">Address:</div>
+          <div className="col-span-1">{cardData.address}</div>
+        </div>
 
         {/* QR + Instructions */}
         <div className="flex justify-between items-start mt-4">
