@@ -19,7 +19,7 @@ const links = [
 ];
 
 interface SidebarProps {
-  className?: string; // ✅ allow custom className
+  className?: string;
 }
 
 export function Sidebar({ className }: SidebarProps) {
@@ -28,12 +28,12 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "bg-white border-r shadow-sm min-h-screen flex flex-col transition-all duration-300",
+        "bg-white border-r shadow-sm h-screen flex flex-col transition-all duration-300",
         collapsed ? "w-16" : "w-64",
-        className // ✅ now external className works
+        className
       )}
     >
-      {/* Header with toggle button */}
+      {/* Header with toggle */}
       <div className="flex items-center justify-between p-4 border-b">
         {!collapsed && <h1 className="text-lg font-bold">Card Panel</h1>}
         <Button
@@ -56,7 +56,7 @@ export function Sidebar({ className }: SidebarProps) {
             key={href}
             href={href}
             className={cn(
-              "flex items-center gap-2 rounded-md p-2 text-sm font-medium hover:bg-gray-100 transition-colors",
+              "flex items-center gap-2 rounded-md p-2 text-sm font-medium hover:bg-gray-100 transition-colors cursor-pointer",
               collapsed && "justify-center"
             )}
           >

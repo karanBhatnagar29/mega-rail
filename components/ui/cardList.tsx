@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { useState } from "react";
 
 export interface CardType {
@@ -36,9 +37,11 @@ const Card = ({ card }: { card: CardType }) => {
         <div className="absolute w-full h-full bg-white rounded-xl shadow-md border border-gray-300 flex [backface-visibility:hidden]">
           <div className="w-1/3 flex items-center justify-center p-2">
             {card.photo ? (
-              <img
+              <Image
                 src={card.photo}
                 alt={card.employeeName}
+                width={96}
+                height={96}
                 className="w-24 h-24 object-cover rounded-md border"
               />
             ) : (

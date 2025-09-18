@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Card, { CardType } from "../../components/ui/cardList";
+import Image from "next/image";
 
 const CardPage = () => {
   const [cards, setCards] = useState<CardType[]>([]);
@@ -25,17 +26,16 @@ const CardPage = () => {
       });
   }, []);
 
-const handleEditClick = async (card: CardType) => {
-  try {
-    const res = await axios.get(`http://localhost:3000/card/${card._id}`);
-    setEditingCard(res.data);
-    setFormData(res.data); // preload all fields with server response
-    setFile(null);
-  } catch (err) {
-    console.error("Error fetching card details:", err);
-  }
-};
-
+  const handleEditClick = async (card: CardType) => {
+    try {
+      const res = await axios.get(`http://localhost:3000/card/${card._id}`);
+      setEditingCard(res.data);
+      setFormData(res.data); // preload all fields with server response
+      setFile(null);
+    } catch (err) {
+      console.error("Error fetching card details:", err);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -52,14 +52,16 @@ const handleEditClick = async (card: CardType) => {
 
     try {
       const data = new FormData();
+
       Object.entries(formData).forEach(([key, value]) => {
+        if (key === "photo" && file) return; // skip old photo if uploading new
         if (value !== undefined && value !== null) {
           data.append(key, value as string);
         }
       });
 
       if (file) {
-        data.append("file", file); // 👈 backend expects "file"
+        data.append("file", file); // 👈 matches FileInterceptor('file')
       }
 
       const res = await axios.put(
@@ -68,18 +70,25 @@ const handleEditClick = async (card: CardType) => {
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
-      // update locally
       setCards((prev) =>
         prev.map((c) => (c._id === editingCard._id ? res.data : c))
       );
 
       setEditingCard(null);
+      setFile(null);
     } catch (err) {
       console.error("Error updating card:", err);
     }
   };
 
-  if (loading) return <p className="text-center text-gray-600">Loading...</p>;
+  // 🔹 Better loader with spinner
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="w-12 h-12 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -89,7 +98,7 @@ const handleEditClick = async (card: CardType) => {
           <div key={card._id} className="relative">
             <Card card={card} />
             <button
-              className="absolute top-2 right-2 bg-blue-500 text-white text-sm px-2 py-1 rounded"
+              className="absolute top-2 right-2 bg-blue-500 text-white text-sm px-2 py-1 rounded cursor-pointer"
               onClick={() => handleEditClick(card)}
             >
               Edit
@@ -155,9 +164,7 @@ const handleEditClick = async (card: CardType) => {
               type="date"
               name="dateOfIssue"
               value={
-                formData.dateOfIssue
-                  ? formData.dateOfIssue.split("T")[0] // format YYYY-MM-DD
-                  : ""
+                formData.dateOfIssue ? formData.dateOfIssue.split("T")[0] : ""
               }
               onChange={handleInputChange}
               className="w-full border p-2 mb-2 rounded"
@@ -221,31 +228,53 @@ const handleEditClick = async (card: CardType) => {
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
-                className="w-full"
+                className="w-full cursor-pointer"
               />
+
+              {/* Show current photo if no new file selected */}
               {editingCard.photo && !file && (
-                <img
+                <Image
                   src={editingCard.photo}
                   alt="Current"
+                  width={96}
+                  height={96}
                   className="w-24 h-24 rounded mt-2 object-cover"
                 />
               )}
+
+              {/* Show preview of new photo if file selected */}
               {file && (
-                <p className="text-sm text-gray-500 mt-1">
-                  Selected: {file.name}
-                </p>
+                <div className="mt-2">
+                  <Image
+                    src={URL.createObjectURL(file)}
+                    alt="Preview"
+                    width={96}
+                    height={96}
+                    className="w-24 h-24 rounded object-cover"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Selected: {file.name}
+                  </p>
+                  <button
+                    type="button"
+                    className="mt-2 px-3 py-1 text-sm bg-red-500 text-white rounded cursor-pointer"
+                    onClick={() => setFile(null)}
+                  >
+                    Remove Selected Photo
+                  </button>
+                </div>
               )}
             </div>
 
             <div className="flex justify-end gap-2 mt-4">
               <button
-                className="bg-gray-400 text-white px-4 py-2 rounded"
+                className="bg-gray-400 text-white px-4 py-2 rounded cursor-pointer"
                 onClick={() => setEditingCard(null)}
               >
                 Cancel
               </button>
               <button
-                className="bg-green-600 text-white px-4 py-2 rounded"
+                className="bg-green-600 text-white px-4 py-2 rounded cursor-pointer"
                 onClick={handleUpdate}
               >
                 Save

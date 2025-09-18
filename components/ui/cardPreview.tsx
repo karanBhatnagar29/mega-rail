@@ -51,9 +51,11 @@ export default function EmployeeCard({ cardData }: { cardData: any }) {
           {/* Photo with Seal */}
           <div className="flex-shrink-0 relative">
             {cardData.photo ? (
-              <img
+              <Image
                 src={cardData.photo}
                 alt="Employee"
+                width={96}
+                height={112}
                 className="w-24 h-28 object-cover border-2 border-gray-400 rounded-md"
               />
             ) : (

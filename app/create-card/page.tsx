@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/popover";
 
 import EmployeeCard from "@/components/ui/cardPreview";
+import Image from "next/image";
 
 // ✅ Validation Schema
 const formSchema = z.object({
@@ -70,7 +71,8 @@ export default function CreateCardPage() {
       divisionName: "NORTH WESTERN RAILWAY JODHPUR DIVISION",
       loaNumber: "LOA NO. 02 of 2023-24/010010700779589",
       profileName: "M/s. Megarail Power Projects LLP",
-      description: "Valid for Railway station, Yard and Coaching Depot of JU, BME BGKT with tools and equipments", // 🔹 default empty
+      description:
+        "Valid for Railway station, Yard and Coaching Depot of JU, BME BGKT with tools and equipments", // 🔹 default empty
     },
   });
 
@@ -405,9 +407,11 @@ export default function CreateCardPage() {
             {selectedPhoto && (
               <div className="mt-4">
                 <p className="text-sm text-gray-500 mb-1">Preview:</p>
-                <img
+                <Image
                   src={selectedPhoto}
                   alt="Preview"
+                  width={128}
+                    height={128}
                   className="w-32 h-32 object-cover rounded-md border"
                 />
               </div>
