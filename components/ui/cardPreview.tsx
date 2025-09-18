@@ -3,8 +3,9 @@
 import { format } from "date-fns";
 import Image from "next/image";
 import QRCode from "react-qr-code";
+import { CardType } from "./cardList";
 
-export default function EmployeeCard({ cardData }: { cardData: any }) {
+export default function EmployeeCard({ cardData }: { cardData: CardType }) {
   return (
     <div className="mt-12 flex flex-col gap-6 items-center">
       {/* FRONT SIDE */}

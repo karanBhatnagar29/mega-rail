@@ -28,6 +28,7 @@ import {
 
 import EmployeeCard from "@/components/ui/cardPreview";
 import Image from "next/image";
+import { CardType } from "@/types/card";
 
 // ✅ Validation Schema
 const formSchema = z.object({
@@ -52,7 +53,7 @@ const formSchema = z.object({
 
 export default function CreateCardPage() {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
-  const [cardData, setCardData] = useState<any>(null);
+  const [cardData, setCardData] = useState<CardType | null>(null); // ✅ replaced any
   const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -411,7 +412,7 @@ export default function CreateCardPage() {
                   src={selectedPhoto}
                   alt="Preview"
                   width={128}
-                    height={128}
+                  height={128}
                   className="w-32 h-32 object-cover rounded-md border"
                 />
               </div>
@@ -434,7 +435,9 @@ export default function CreateCardPage() {
         </form>
       </Form>
 
-      {cardData && <EmployeeCard cardData={cardData} />}
+      {cardData && cardData._id && (
+        <EmployeeCard cardData={{ ...cardData, _id: cardData._id as string }} />
+      )}
     </div>
   );
 }
