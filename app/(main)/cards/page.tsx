@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Card, { CardType } from "../../components/ui/cardList";
+import Card, { CardType } from "../../../components/ui/cardList";
 import Image from "next/image";
 
 const CardPage = () => {

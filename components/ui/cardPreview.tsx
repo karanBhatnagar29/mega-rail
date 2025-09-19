@@ -6,6 +6,9 @@ import QRCode from "react-qr-code";
 import { CardType } from "./cardList";
 
 export default function EmployeeCard({ cardData }: { cardData: CardType }) {
+  // ✅ Generate link for card details page
+  const cardUrl = `http://localhost:3000/card/view/${cardData._id}`;
+
   return (
     <div className="mt-12 flex flex-col gap-6 items-center">
       {/* FRONT SIDE */}
@@ -125,7 +128,8 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
             Valid for Railway Station, Yard and Coaching Depot of JU, BME BGKT
             with tools and equipments.
           </p>
-          <QRCode value={cardData.adharCardNumber} size={64} />
+          {/* ✅ QR now links to details page */}
+          <QRCode value={cardUrl} size={64} />
         </div>
 
         {/* Signature */}
