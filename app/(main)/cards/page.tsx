@@ -15,7 +15,7 @@ const CardPage = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3000/card")
+      .get(`${process.env.NEXT_PUBLIC_BASE_URL}/card`)
       .then((res) => {
         setCards(res.data);
         setLoading(false);
@@ -28,7 +28,7 @@ const CardPage = () => {
 
   const handleEditClick = async (card: CardType) => {
     try {
-      const res = await axios.get(`http://localhost:3000/card/${card._id}`);
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/card/${card._id}`);
       setEditingCard(res.data);
       setFormData(res.data); // preload all fields with server response
       setFile(null);
@@ -65,7 +65,7 @@ const CardPage = () => {
       }
 
       const res = await axios.put(
-        `http://localhost:3000/card/${editingCard._id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/card/${editingCard._id}`,
         data,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

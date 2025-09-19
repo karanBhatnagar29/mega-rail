@@ -7,7 +7,7 @@ import { CardType } from "./cardList";
 
 export default function EmployeeCard({ cardData }: { cardData: CardType }) {
   // ✅ Generate link for card details page
-  const cardUrl = `http://localhost:3000/card/view/${cardData._id}`;
+  const cardUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/card/view/${cardData._id}`;
 
   return (
     <div className="mt-12 flex flex-col gap-6 items-center">

@@ -99,7 +99,7 @@ export default function CreateCardPage() {
       }
 
       const response = await axios.post(
-        "http://localhost:3000/card/create",
+        `${process.env.NEXT_PUBLIC_BASE_URL}/card/create`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

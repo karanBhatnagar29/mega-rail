@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { format } from "date-fns";
 
 async function getCard(id: string) {
-  const res = await fetch(`http://localhost:3000/card/${id}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/card/${id}`, {
     cache: "no-store", // always fetch fresh data
   });
 
