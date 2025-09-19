@@ -4,9 +4,12 @@ import { notFound } from "next/navigation";
 import { format } from "date-fns";
 
 async function getCard(id: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/card/${id}`, {
-    cache: "no-store", // always fetch fresh data
-  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/card/view/${id}`,
+    {
+      cache: "no-store", // always fetch fresh data
+    }
+  );
 
   if (!res.ok) return null;
   return res.json();
