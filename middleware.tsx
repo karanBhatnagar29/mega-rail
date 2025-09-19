@@ -1,26 +1,29 @@
-// middleware.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
-  const token = request.cookies.get("auth_token")?.value;
+export function middleware(req: NextRequest) {
+  const token = req.cookies.get("auth_token")?.value;
+  const { pathname } = req.nextUrl;
 
-  const publicPaths = ["/", "/unauthorized", "/favicon.ico", "/_next"];
+  // All routes that should be protected
+  const protectedPaths = ["/create-card", "/cards"];
+  console.log("cookies:", req.cookies.getAll());
 
-  // allow public paths without token
-  if (publicPaths.some((path) => request.nextUrl.pathname.startsWith(path))) {
-    return NextResponse.next();
-  }
+  const isProtected =
+    pathname.startsWith("/main/") ||
+    protectedPaths.some((p) => pathname.startsWith(p));
 
-  // redirect if token missing
-  if (!token) {
-    return NextResponse.redirect(new URL("/unauthorized", request.url));
+  if (isProtected && !token) {
+    return NextResponse.redirect(new URL("/unauthorized", req.url));
   }
 
   return NextResponse.next();
 }
 
-// Apply middleware to all routes except api, static files, etc.
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/create-card", // protect this route
+    "/cards",
+    "/cards/:path*", // protect /cards and all its subroutes
+  ],
 };

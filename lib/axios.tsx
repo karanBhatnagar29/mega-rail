@@ -10,9 +10,19 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = Cookies.get("auth_token");
+  console.log("🔑 Token from cookie:", token);
+  console.log("📤 Request URL:", config.url);
+  console.log("📤 Request Headers before:", config.headers);
+
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    // ✅ Use set() to avoid TS issues with AxiosHeaders
+    if (config.headers) {
+      (config.headers as any).set?.("Authorization", `Bearer ${token}`) ||
+        ((config.headers as any)["Authorization"] = `Bearer ${token}`);
+    }
   }
+
+  console.log("📤 Request Headers after:", config.headers);
   return config;
 });
 
@@ -20,7 +30,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // redirect to unauthorized page
       if (typeof window !== "undefined") {
         window.location.href = "/unauthorized";
       }

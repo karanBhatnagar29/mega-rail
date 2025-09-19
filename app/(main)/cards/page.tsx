@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import Card, { CardType } from "../../../components/ui/cardList";
 import Image from "next/image";
 import Cookies from "js-cookie";
@@ -18,9 +17,7 @@ const CardPage = () => {
 
   useEffect(() => {
     api
-      .get(`${process.env.NEXT_PUBLIC_BASE_URL}/card`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get("/card") // baseURL already set
       .then((res) => {
         setCards(res.data);
         setLoading(false);
@@ -33,12 +30,7 @@ const CardPage = () => {
 
   const handleEditClick = async (card: CardType) => {
     try {
-      const res = await api.get(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/card/${card._id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await api.get(`/card/${card._id}`);
       setEditingCard(res.data);
       setFormData(res.data); // preload all fields with server response
       setFile(null);
@@ -47,7 +39,9 @@ const CardPage = () => {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -73,16 +67,9 @@ const CardPage = () => {
       if (file) {
         data.append("file", file); // 👈 matches FileInterceptor('file')
       }
-      const res = await api.put(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/card/${editingCard._id}`,
-        data,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`, // 👈 must be inside headers
-          },
-        }
-      );
+      const res = await api.put(`/card/${editingCard._id}`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       setCards((prev) =>
         prev.map((c) => (c._id === editingCard._id ? res.data : c))
@@ -227,12 +214,14 @@ const CardPage = () => {
               placeholder="Profile Name"
               className="w-full border p-2 mb-2 rounded"
             />
-            <input
+            <textarea
               name="description"
-              value={formData.description || ""}
-              onChange={handleInputChange}
+              value={String(formData.description ?? "")}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               placeholder="Description"
-              className="w-full border p-2 mb-2 rounded"
+              className="w-full border p-2 mb-2 rounded h-24 resize-none"
             />
 
             {/* PHOTO */}
