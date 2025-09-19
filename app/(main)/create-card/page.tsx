@@ -7,6 +7,7 @@ import * as z from "zod";
 import { format } from "date-fns";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
+import Cookies from "js-cookie";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +30,7 @@ import {
 import EmployeeCard from "@/components/ui/cardPreview";
 import Image from "next/image";
 import { CardType } from "@/types/card";
+import api from "@/lib/axios";
 
 // ✅ Validation Schema
 const formSchema = z.object({
@@ -77,6 +79,8 @@ export default function CreateCardPage() {
     },
   });
 
+  const token = Cookies.get("auth_token");
+
   // ✅ Submit Handler
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -98,10 +102,15 @@ export default function CreateCardPage() {
         formData.append("file", values.photo);
       }
 
-      const response = await axios.post(
+      const response = await api.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}/card/create`,
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       setCardData(response.data);

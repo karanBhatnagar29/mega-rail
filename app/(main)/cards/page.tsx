@@ -3,10 +3,13 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Card, { CardType } from "../../../components/ui/cardList";
 import Image from "next/image";
+import Cookies from "js-cookie";
+import api from "@/lib/axios";
 
 const CardPage = () => {
   const [cards, setCards] = useState<CardType[]>([]);
   const [loading, setLoading] = useState(true);
+  const token = Cookies.get("auth_token");
 
   // For editing
   const [editingCard, setEditingCard] = useState<CardType | null>(null);
@@ -14,8 +17,10 @@ const CardPage = () => {
   const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
-    axios
-      .get(`${process.env.NEXT_PUBLIC_BASE_URL}/card`)
+    api
+      .get(`${process.env.NEXT_PUBLIC_BASE_URL}/card`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then((res) => {
         setCards(res.data);
         setLoading(false);
@@ -28,7 +33,12 @@ const CardPage = () => {
 
   const handleEditClick = async (card: CardType) => {
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/card/${card._id}`);
+      const res = await api.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/card/${card._id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setEditingCard(res.data);
       setFormData(res.data); // preload all fields with server response
       setFile(null);
@@ -63,11 +73,15 @@ const CardPage = () => {
       if (file) {
         data.append("file", file); // 👈 matches FileInterceptor('file')
       }
-
-      const res = await axios.put(
+      const res = await api.put(
         `${process.env.NEXT_PUBLIC_BASE_URL}/card/${editingCard._id}`,
         data,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`, // 👈 must be inside headers
+          },
+        }
       );
 
       setCards((prev) =>
