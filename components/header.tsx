@@ -8,7 +8,7 @@ export function Header() {
 
   const handleLogout = () => {
     Cookies.remove("auth_token"); // remove token
-    router.push("/login"); // redirect to login page
+    router.push("/"); // redirect to login page
   };
 
   return (

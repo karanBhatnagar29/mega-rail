@@ -1,5 +1,6 @@
 // app/layout.tsx
 import "./globals.css";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -8,7 +9,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50">{children}</body>
+      <body className="bg-gray-50">
+        {children}
+        <Toaster richColors position="top-center" />
+      </body>
     </html>
   );
 }

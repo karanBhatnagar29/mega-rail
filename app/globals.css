@@ -174,3 +174,23 @@
 .animation-delay-4000 {
   animation-delay: 4s;
 }
+.bg-blue-600 {
+  background-color: #2563eb !important; /* Tailwind blue-600 hex */
+}
+.bg-blue-700 {
+  background-color: #1d4ed8 !important;
+}
+/* in globals.css */
+.html2canvas-safe {
+  --background: #ffffff;
+  --foreground: #222222;
+  --border: #cccccc;
+  --primary: #2563eb;
+  --secondary: #f3f4f6;
+}
+.print-hide {
+  display: block;
+}
+.print-hide.hide-in-export {
+  display: none !important;
+}

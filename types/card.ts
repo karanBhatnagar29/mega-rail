@@ -11,7 +11,9 @@ export interface CardType {
   validTill: string; // ISO date string
   mobileNumber: string;
   address: string;
-  photo?: string; // image URL
+  photo?: string | undefined;
+  seal?: string | undefined;
+  sign?: string | undefined;
   divisionName: string;
   loaNumber: string;
   profileName: string;

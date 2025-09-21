@@ -17,8 +17,8 @@ api.interceptors.request.use((config) => {
   if (token) {
     // ✅ Use set() to avoid TS issues with AxiosHeaders
     if (config.headers) {
-      (config.headers as any).set?.("Authorization", `Bearer ${token}`) ||
-        ((config.headers as any)["Authorization"] = `Bearer ${token}`);
+      (config.headers ).set?.("Authorization", `Bearer ${token}`) ||
+        ((config.headers )["Authorization"] = `Bearer ${token}`);
     }
   }
 

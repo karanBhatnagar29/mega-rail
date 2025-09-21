@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
@@ -60,7 +59,7 @@ export default function LoginPage() {
 
         {/* Title */}
         <h2 className="text-2xl font-semibold text-center mb-1">
-          Welcome Back
+          Welcome to MEGA RAIL
         </h2>
         <p className="text-sm text-gray-400 text-center mb-8">
           Sign in to continue to{" "}
@@ -130,8 +129,6 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-
-     
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import * as z from "zod";
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 import Cookies from "js-cookie";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +31,6 @@ import EmployeeCard from "@/components/ui/cardPreview";
 import Image from "next/image";
 import { CardType } from "@/types/card";
 import api from "@/lib/axios";
-
 // ✅ Validation Schema
 const formSchema = z.object({
   cardNo: z.string().min(1, "Card number is required"),
@@ -44,6 +44,8 @@ const formSchema = z.object({
   mobileNumber: z.string().length(10, "Mobile must be 10 digits"),
   address: z.string().min(1, "Address is required"),
   photo: z.any().optional(),
+  sign: z.any().optional(),
+  seal: z.any().optional(),
   divisionName: z.string().min(1, "Division name is required"),
   loaNumber: z.string().min(1, "LOA number is required"),
   profileName: z.string().min(1, "Profile name is required"),
@@ -56,6 +58,8 @@ export default function CreateCardPage() {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [cardData, setCardData] = useState<CardType | null>(null); // ✅ replaced any
   const [loading, setLoading] = useState(false);
+  const [selectedSeal, setSelectedSeal] = useState<string | null>(null);
+  const [selectedSign, setSelectedSign] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -91,14 +95,25 @@ export default function CreateCardPage() {
       Object.entries(values).forEach(([key, value]) => {
         if (value instanceof Date) {
           formData.append(key, value.toISOString());
-        } else if (value && key !== "photo") {
+        } else if (
+          value &&
+          key !== "photo" &&
+          key !== "seal" &&
+          key !== "sign"
+        ) {
           formData.append(key, value as string);
         }
       });
 
       // append file
       if (values.photo instanceof File) {
-        formData.append("file", values.photo);
+        formData.append("photo", values.photo);
+      }
+      if (values.sign instanceof File) {
+        formData.append("sign", values.sign);
+      }
+      if (values.seal instanceof File) {
+        formData.append("seal", values.seal);
       }
 
       const response = await api.post(
@@ -113,10 +128,14 @@ export default function CreateCardPage() {
       );
 
       setCardData(response.data);
-      alert("✅ Card created successfully!");
+      toast.success("✅ Card created successfully!", {
+        description: "Your card has been generated and saved.",
+      });
     } catch (error) {
       console.error("Error creating card:", error);
-      alert("❌ Failed to create card. Check console.");
+      toast.error("❌ Failed to create card", {
+        description: "Check console for details and try again.",
+      });
     } finally {
       setLoading(false);
     }
@@ -386,45 +405,87 @@ export default function CreateCardPage() {
 
           {/* --- Upload Section --- */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 border-b pb-2">Photo</h3>
-            <FormField
-              control={form.control}
-              name="photo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Upload Photo</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          field.onChange(file);
-                          const reader = new FileReader();
-                          reader.onload = () =>
-                            setSelectedPhoto(reader.result as string);
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {selectedPhoto && (
-              <div className="mt-4">
-                <p className="text-sm text-gray-500 mb-1">Preview:</p>
-                <Image
-                  src={selectedPhoto}
-                  alt="Preview"
-                  width={128}
-                  height={128}
-                  className="w-32 h-32 object-cover rounded-md border"
+            <h3 className="text-lg font-semibold mb-4 border-b pb-2">
+              Uploads
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* File Upload Item */}
+              {[
+                {
+                  name: "photo",
+                  label: "Upload Photo",
+                  preview: selectedPhoto,
+                  setPreview: setSelectedPhoto,
+                },
+                {
+                  name: "seal",
+                  label: "Upload Seal",
+                  preview: selectedSeal,
+                  setPreview: setSelectedSeal,
+                },
+                {
+                  name: "sign",
+                  label: "Upload Signature",
+                  preview: selectedSign,
+                  setPreview: setSelectedSign,
+                },
+              ].map((item) => (
+                <FormField
+                  key={item.name}
+                  control={form.control}
+                  name={item.name as "photo" | "seal" | "sign"}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{item.label}</FormLabel>
+                      <div className="relative flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-4 hover:border-blue-500 transition cursor-pointer bg-gray-50">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              field.onChange(file);
+                              const reader = new FileReader();
+                              reader.onload = () =>
+                                item.setPreview(reader.result as string);
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                        {item.preview ? (
+                          <Image
+                            src={item.preview}
+                            alt={`${item.label} Preview`}
+                            width={100}
+                            height={100}
+                            className="w-24 h-24 object-cover rounded-md border shadow"
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center text-gray-400 text-sm">
+                            <svg
+                              className="w-10 h-10 mb-2"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M4 16v-1a4 4 0 014-4h1m6 0h1a4 4 0 014 4v1m-4 4h4m-10 0h-4m6 0V4m0 0l-2 2m2-2l2 2"
+                              />
+                            </svg>
+                            <span>Click or drag to upload</span>
+                          </div>
+                        )}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-            )}
+              ))}
+            </div>
           </div>
 
           {/* Submit */}
