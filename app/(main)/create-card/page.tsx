@@ -419,13 +419,13 @@ export default function CreateCardPage() {
                 },
                 {
                   name: "seal",
-                  label: "Upload Seal",
+                  label: "Supervisor",
                   preview: selectedSeal,
                   setPreview: setSelectedSeal,
                 },
                 {
                   name: "sign",
-                  label: "Upload Signature",
+                  label: "Railway Supervisor",
                   preview: selectedSign,
                   setPreview: setSelectedSign,
                 },

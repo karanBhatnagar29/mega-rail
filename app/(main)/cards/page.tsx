@@ -7,6 +7,18 @@ import api from "@/lib/axios";
 import { X } from "lucide-react";
 import jsPDF from "jspdf";
 import * as htmlToImage from "html-to-image";
+import Cookies from "js-cookie";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 const CardPage = () => {
   const [cards, setCards] = useState<CardType[]>([]);
@@ -15,6 +27,10 @@ const CardPage = () => {
   // For editing
   const [editingCard, setEditingCard] = useState<CardType | null>(null);
   const [formData, setFormData] = useState<Partial<CardType>>({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [noResults, setNoResults] = useState(false);
+
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   // File states
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -34,6 +50,24 @@ const CardPage = () => {
         setLoading(false);
       });
   }, []);
+
+  const handleSearch = async (query: string) => {
+    try {
+      if (!query) {
+        // If empty, fetch all cards
+        const res = await api.get("/card");
+        setCards(res.data);
+        return;
+      }
+
+      const res = await api.get(`/card/search?q=${encodeURIComponent(query)}`);
+      setCards(res.data);
+      setNoResults(res.data.length === 0);
+    } catch (err) {
+      console.error("Search failed:", err);
+      toast.error("❌ Search failed");
+    }
+  };
 
   const handleEditClick = async (card: CardType) => {
     try {
@@ -73,7 +107,7 @@ const CardPage = () => {
       const data = new FormData();
 
       Object.entries(formData).forEach(([key, value]) => {
-        if (["photo", "sign", "seal"].includes(key)) return; // skip here
+        if (["photo", "sign", "seal"].includes(key)) return;
         if (value !== undefined && value !== null) {
           data.append(key, value as string);
         }
@@ -100,15 +134,15 @@ const CardPage = () => {
     }
   };
 
-  // 🔹 Download functionality
-  const handleDownload = async (card: CardType) => {
+  // 🔹 PDF Download
+  const handleDownloadPDF = async (card: CardType) => {
     const pdf = new jsPDF("p", "mm", "a4");
 
     const addCardToPdf = async (elementId: string, page: number) => {
       const element = document.getElementById(elementId);
       if (!element) return;
 
-      // 🔹 Temporarily remove flip transform for capture
+      // temporarily reset transform to avoid mirrored back
       const originalTransform = element.style.transform;
       element.style.transform = "rotateY(0deg)";
 
@@ -118,19 +152,19 @@ const CardPage = () => {
         pixelRatio: 2,
       });
 
-      // 🔹 Restore transform after capture
       element.style.transform = originalTransform;
 
       const img = new window.Image();
       img.src = dataUrl;
       await new Promise((resolve) => (img.onload = resolve));
 
-      const cardWidth = 100;
+      // center image
+      const cardWidth = 85; // mm
       const cardHeight = (img.height * cardWidth) / img.width;
-
       const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
       const x = (pageWidth - cardWidth) / 2;
-      const y = 20;
+      const y = (pageHeight - cardHeight) / 2;
 
       if (page > 0) pdf.addPage();
       pdf.addImage(dataUrl, "PNG", x, y, cardWidth, cardHeight);
@@ -142,6 +176,90 @@ const CardPage = () => {
       pdf.save(`${card.employeeName}_Card.pdf`);
     } catch (err) {
       console.error("PDF generation failed:", err);
+    }
+  };
+  const handleDeleteClick = (id: string) => {
+    setDeleteId(id); // open the confirm box
+  };
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await api.delete(`/card/${deleteId}`, {
+        headers: { Authorization: `Bearer ${Cookies.get("auth_token")}` },
+      });
+
+      setCards((prev) => prev.filter((c) => c._id !== deleteId));
+      setDeleteId(null);
+
+      toast.success("✅ Card deleted successfully!", {
+        description: "The card has been permanently removed.",
+      });
+    } catch (err) {
+      console.error("Error deleting card:", err);
+      toast.error("❌ Failed to delete card", {
+        description: "Something went wrong while deleting the card.",
+      });
+    }
+  };
+
+  // 🔹 PNG Download
+  const handleDownloadPNG = async (card: CardType) => {
+    const captureElement = async (id: string): Promise<HTMLImageElement> => {
+      const element = document.getElementById(id);
+      if (!element) throw new Error(`Element ${id} not found`);
+
+      const originalTransform = element.style.transform;
+      element.style.transform = "rotateY(0deg)";
+
+      const dataUrl = await htmlToImage.toPng(element, {
+        cacheBust: true,
+        backgroundColor: "#ffffff",
+        pixelRatio: 2,
+      });
+
+      element.style.transform = originalTransform;
+
+      return new Promise((resolve) => {
+        const img = document.createElement("img");
+        img.src = dataUrl;
+        img.onload = () => resolve(img);
+      });
+    };
+
+    try {
+      const frontImg = await captureElement(`card-front-${card._id}`);
+      const backImg = await captureElement(`card-back-${card._id}`);
+
+      const padding = 20;
+      const width = Math.max(frontImg.width, backImg.width) + padding * 2;
+      const height = frontImg.height + backImg.height + padding * 3;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.drawImage(frontImg, (width - frontImg.width) / 2, padding);
+      ctx.drawImage(
+        backImg,
+        (width - backImg.width) / 2,
+        frontImg.height + padding * 2
+      );
+
+      const finalPng = canvas.toDataURL("image/png");
+
+      const link = document.createElement("a");
+      link.href = finalPng;
+      link.download = `${card.employeeName}_Card.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("PNG generation failed:", err);
     }
   };
 
@@ -156,30 +274,96 @@ const CardPage = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <h1 className="text-2xl font-bold text-center py-6">Employee ID Cards</h1>
-      <div className="flex flex-wrap gap-6 justify-center p-6">
-        {cards.map((card) => (
-          <div key={card._id} className="relative flex flex-col">
-            {/* Each card UI */}
-            <Card card={card} />
-
-            {/* Action Buttons */}
-            <div className="flex gap-2 mt-2">
-              <button
-                className="bg-blue-500 text-white text-sm px-3 py-1 rounded cursor-pointer"
-                onClick={() => handleEditClick(card)}
-              >
-                ✏️
-              </button>
-              <button
-                className="bg-gray-600 text-white text-sm px-3 py-1 rounded cursor-pointer flex items-center gap-1"
-                onClick={() => handleDownload(card)}
-              >
-                ⬇️
-              </button>
-            </div>
-          </div>
-        ))}
+      <div className="flex justify-center p-4">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            handleSearch(e.target.value);
+          }}
+          placeholder="Search by Name or Mobile Number"
+          className="w-full max-w-md border p-2 rounded"
+        />
       </div>
+      {noResults ? (
+        <div className="flex flex-col items-center justify-center mt-20">
+          <img
+            src="/no-result.webp" // optional illustration
+            alt="No Results"
+            className="w-48 h-48 mb-4"
+          />
+          <h2 className="text-xl font-semibold text-gray-700">
+            No search results found
+          </h2>
+          <p className="text-gray-500 mt-2">
+            Try searching with a different name or number
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-6 justify-center p-6">
+          {cards.map((card) => (
+            <div key={card._id} className="relative flex flex-col items-center">
+              {/* Each card UI */}
+              <Card card={card} />
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 mt-2">
+                <button
+                  className="bg-blue-500 text-white text-sm px-3 py-1 rounded cursor-pointer"
+                  onClick={() => handleEditClick(card)}
+                >
+                  ✏️
+                </button>
+
+                <button
+                  className="bg-red-600 text-white text-sm px-3 py-1 rounded cursor-pointer"
+                  onClick={() => handleDownloadPDF(card)}
+                >
+                  📄 PDF
+                </button>
+
+                <button
+                  className="bg-green-600 text-white text-sm px-3 py-1 rounded cursor-pointer"
+                  onClick={() => handleDownloadPNG(card)}
+                >
+                  🖼 PNG
+                </button>
+
+                <button
+                  className="bg-gray-700 text-white text-sm px-3 py-1 rounded cursor-pointer"
+                  onClick={() => handleDeleteClick(card._id)}
+                >
+                  🗑 Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The card will be permanently
+              deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteId(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Edit Modal */}
       {editingCard && (

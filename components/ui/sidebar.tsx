@@ -7,6 +7,7 @@ import {
   List,
   ChevronLeft,
   ChevronRight,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
 const links = [
   { href: "/create-card", label: "Create Card", icon: CreditCard },
   { href: "/cards", label: "All Cards", icon: List },
+  { href: "/settings", label: "setting", icon: Settings },
 ];
 
 interface SidebarProps {

@@ -75,7 +75,7 @@ export default async function CardDetailsPage({
 
           {/* Content */}
           <div className="flex gap-4 p-4 relative">
-            {/* Photo */}
+            {/* Photo + Seal */}
             <div className="flex-shrink-0 relative">
               {card.photo ? (
                 <Image
@@ -90,13 +90,16 @@ export default async function CardDetailsPage({
                   No Photo
                 </div>
               )}
-              <Image
-                src="/SEAL Mega Rail.png"
-                alt="Seal"
-                width={70}
-                height={70}
-                className="absolute -bottom-4 left-1/2 -translate-x-1/2 opacity-80"
-              />
+
+              {card.seal && (
+                <Image
+                  src={card.seal}
+                  alt="Seal"
+                  width={70}
+                  height={70}
+                  className="absolute -bottom-4 left-1/2 -translate-x-1/2 opacity-80"
+                />
+              )}
             </div>
 
             {/* Details */}
@@ -121,10 +124,22 @@ export default async function CardDetailsPage({
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="flex justify-between border-t text-[10px] text-gray-600 px-3 py-1">
-            <p>Signature of Contractor with Stamp</p>
-            <p>Signature of Employee</p>
+          {/* Footer (with sign if available) */}
+          <div className="flex flex-col items-center border-t text-[10px] text-gray-600 px-3 py-2">
+            <p className="mb-1">Railway Official Sign</p>
+            {card.sign ? (
+              <Image
+                src={card.sign}
+                alt="Official Signature"
+                width={80}
+                height={40}
+                className="object-contain max-w-[80px] max-h-[40px] mb-2"
+              />
+            ) : (
+              <div className="h-[40px] border-b border-gray-300 w-[80px] mb-2"></div>
+            )}
+            <p>Name : ____________</p>
+            <p>Designation : ____________</p>
           </div>
         </div>
       </div>
