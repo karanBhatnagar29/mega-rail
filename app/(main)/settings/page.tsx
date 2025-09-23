@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
 import { toast } from "sonner"; // optional toast for notifications
 import Cookies from "js-cookie";
 import { Eye, EyeOff } from "lucide-react";
@@ -35,18 +34,15 @@ const ResetPassword = () => {
         "/auth/reset-password",
         { newPassword, confirmPassword },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
       toast.success(res.data.message || "Password updated successfully");
       setNewPassword("");
       setConfirmPassword("");
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.response?.data?.message || "Failed to reset password");
+    } catch (err) {
+      toast.error("Failed to reset password");
     } finally {
       setLoading(false);
     }
