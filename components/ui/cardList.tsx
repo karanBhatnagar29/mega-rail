@@ -17,6 +17,7 @@ export interface CardType {
   dateOfIssue: string;
   validTill: string;
   mobileNumber: string;
+  hirer: string;
   address: string;
   cardNo: string;
   photo?: string | undefined;
@@ -83,7 +84,7 @@ const Card = ({ card }: { card: CardType }) => {
               <h3 className="text-[10px] font-bold uppercase truncate">
                 {card.divisionName}
               </h3>
-              <p className="text-[9px] truncate">{card.loaNumber}</p>
+              <p className="text-[9px] font-bold truncate">{card.loaNumber}</p>
               <p className="font-semibold text-xs truncate">
                 {card.profileName}
               </p>
@@ -134,24 +135,36 @@ const Card = ({ card }: { card: CardType }) => {
 
               {/* Details */}
               <div className="text-[11px] grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 flex-1 leading-tight">
-                <div className="font-semibold">Card No:</div>
-                <div className="truncate">{card.cardNo}</div>
+                <div className="font-bold">Card No:</div>
+                <div className="truncate font-bold">{card.cardNo}</div>
 
-                <div className="font-semibold">Date Issue:</div>
-                <div>{format(new Date(card.dateOfIssue), "dd/MM/yyyy")}</div>
+                <div className="font-bold">Date Issue:</div>
+                <div className="font-bold">
+                  {format(new Date(card.dateOfIssue), "dd/MM/yyyy")}
+                </div>
 
-                <div className="font-semibold">Employee:</div>
-                <div className="truncate">{card.employeeName}</div>
+                <div className="font-bold">Employee:</div>
+                <div className="truncate font-bold">{card.employeeName}</div>
 
-                <div className="font-semibold">Father:</div>
-                <div className="truncate">{card.fatherName}</div>
+                <div className="font-bold">Father:</div>
+                <div className="truncate font-bold">{card.fatherName}</div>
 
-                <div className="font-semibold">Designation:</div>
-                <div className="truncate">{card.designation}</div>
+                <div className="font-bold">Designation:</div>
+                <div className="truncate font-bold">{card.designation}</div>
 
-                <div className="font-semibold">Contractor:</div>
-                <div className="truncate">{card.contractor}</div>
+                <div className="font-bold">Contractor:</div>
+                <div className="truncate font-bold">{card.contractor}</div>
               </div>
+            </div>
+          </div>
+          <div className="flex justify-between px-4 pb-2 mt-8 text-[10px]">
+            <div className="text-center w-1/2">
+              <p className="font-bold leading-tight">
+                Signature of Contractor with Stamp
+              </p>
+            </div>
+            <div className="text-center w-1/2">
+              <p className="font-bold leading-tight">Signature of Employee</p>
             </div>
           </div>
         </div>
@@ -172,33 +185,36 @@ const Card = ({ card }: { card: CardType }) => {
             <div className="flex justify-between items-start">
               <div className="space-y-0.5 text-[10px] text-gray-700">
                 <div>
-                  <span className="font-semibold">Aadhaar:</span>{" "}
-                  {card.adharCardNumber}
+                  <span className="font-bold">Aadhaar:</span>{" "}
+                  <span className="font-bold"> {card.adharCardNumber}</span>
                 </div>
                 <div>
-                  <span className="font-semibold">Valid Till:</span>{" "}
-                  {format(new Date(card.validTill), "dd/MM/yyyy")}
+                  <span className="font-bold">Valid Till:</span>{" "}
+                  <span className="font-bold">
+                    {format(new Date(card.validTill), "dd/MM/yyyy")}
+                  </span>
                 </div>
                 <div>
-                  <span className="font-semibold">Mobile:</span>{" "}
-                  {card.mobileNumber}
+                  <span className="font-bold">Mobile:</span>{" "}
+                  <span className="font-bold"> {card.mobileNumber}</span>
                 </div>
                 <div>
-                  <span className="font-semibold">Address:</span> {card.address}
+                  <span className="font-bold">Address:</span>{" "}
+                  <span className="font-bold">{card.address}</span>
                 </div>
               </div>
-              <QRCode value={cardUrl} size={64} />
+              <QRCode value={cardUrl} size={70} />
             </div>
 
             {/* Middle section */}
-            <p className="mt-2 text-[10px] text-gray-700 leading-tight">
+            <p className="mt-2 text-[10px] font-bold leading-tight">
               {card.description ||
                 "Valid for Railway Station, Yard and Coaching Depot of JU, BME BGKT with tools and equipments."}
             </p>
 
             {/* Bottom section */}
             <div className="mt-2 flex justify-end">
-              <div className="text-center text-[9px] text-gray-600 w-[120px]">
+              <div className="text-center text-[9px] text-gray-600 w-[150px]">
                 <p className="mb-1">Railway Official Sign</p>
 
                 {/* Signature / Seal */}
@@ -217,14 +233,10 @@ const Card = ({ card }: { card: CardType }) => {
 
                 {/* Name + Designation */}
                 <div className="space-y-1 text-[10px] text-gray-700">
-                  <div className="flex items-center gap-1">
-                    <span>Name :</span>
-                    <span className="flex-1 border-b border-gray-400"></span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span>Designation :</span>
-                    <span className="flex-1 border-b border-gray-400"></span>
-                  </div>
+                  <p className="font-bold text-left">Sign: _________</p>
+                  <p className="font-bold text-left">
+                    Designation: {card.hirer}
+                  </p>
                 </div>
               </div>
             </div>

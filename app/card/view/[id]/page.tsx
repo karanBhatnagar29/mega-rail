@@ -124,8 +124,7 @@ export default async function CardDetailsPage({
             </div>
           </div>
 
-          {/* Footer (with sign if available) */}
-          <div className="flex flex-col items-center border-t text-[10px] text-gray-600 px-3 py-2">
+          {/* <div className="flex flex-col items-center border-t text-[10px] text-gray-600 px-3 py-2">
             <p className="mb-1">Railway Official Sign</p>
             {card.sign ? (
               <Image
@@ -138,9 +137,7 @@ export default async function CardDetailsPage({
             ) : (
               <div className="h-[40px] border-b border-gray-300 w-[80px] mb-2"></div>
             )}
-            <p>Name : ____________</p>
-            <p>Designation : ____________</p>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -154,6 +151,9 @@ export default async function CardDetailsPage({
           <p>
             <strong>Date Issue:</strong>{" "}
             {new Date(card.dateOfIssue).toLocaleDateString()}
+          </p>
+          <p className="col-span-2">
+            <strong>Hirer:</strong> {card.hirer}
           </p>
 
           <p>

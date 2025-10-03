@@ -11,6 +11,16 @@ import { FileDown, FileImage, FileText } from "lucide-react";
 export default function EmployeeCard({ cardData }: { cardData: CardType }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const cardUrl = `http://13.202.200.98:3001/card/view/${cardData._id}`;
+  // split description at the word 'depot' (case-insensitive)
+  const fullDesc =
+    cardData.description ||
+    "Valid for Railway Station, Yard and Coaching Depot of JU, BME BGKT with tools and equipments.";
+  const lowerDesc = fullDesc.toLowerCase();
+  const depotIdx = lowerDesc.indexOf("depot");
+  const firstDescLine =
+    depotIdx !== -1 ? fullDesc.slice(0, depotIdx + "depot".length) : fullDesc;
+  const secondDescLine =
+    depotIdx !== -1 ? fullDesc.slice(depotIdx + "depot".length).trim() : "";
 
   // 🔹 Download as PDF
   const handleDownloadPDF = async () => {
@@ -130,6 +140,7 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
     <div className="mt-12 flex flex-col gap-6 items-center">
       <div className="flex flex-col gap-6 items-center relative">
         {/* FRONT SIDE */}
+
         <div
           id={`card-front-${cardData._id}`}
           className="w-[420px] bg-white border-2 border-gray-400 rounded-xl shadow-lg overflow-hidden"
@@ -149,8 +160,8 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
               <h3 className="text-[10.5px] font-bold uppercase whitespace-nowrap text-ellipsis">
                 {cardData.divisionName}
               </h3>
-              <p className="text-[10px]">{cardData.loaNumber}</p>
-              <p className="font-semibold text-sm">{cardData.profileName}</p>
+              <p className="text-[10px] font-bold">{cardData.loaNumber}</p>
+              <p className="font-bold text-sm">{cardData.profileName}</p>
               <div className="bg-red-600 text-white text-xs font-bold py-1 rounded-md mt-1 inline-block px-3">
                 IDENTITY CARD
               </div>
@@ -199,23 +210,37 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
 
             {/* Details */}
             <div className="text-[12px] grid grid-cols-[auto_1fr] gap-x-1 gap-y-1 flex-1">
-              <div className="font-semibold">Card No:</div>
-              <div>{cardData.cardNo}</div>
+              <div className="font-bold">Card No:</div>
+              <div className="font-bold">{cardData.cardNo}</div>
 
-              <div className="font-semibold">Date Issue:</div>
-              <div>{format(new Date(cardData.dateOfIssue), "dd/MM/yyyy")}</div>
+              <div className="font-bold">Date Issue:</div>
+              <div className="font-bold">
+                {format(new Date(cardData.dateOfIssue), "dd/MM/yyyy")}
+              </div>
 
-              <div className="font-semibold">Employee:</div>
-              <div>{cardData.employeeName}</div>
+              <div className="font-bold">Employee:</div>
+              <div className="font-bold">{cardData.employeeName}</div>
 
-              <div className="font-semibold">Father:</div>
-              <div>{cardData.fatherName}</div>
+              <div className="font-bold">Father:</div>
+              <div className="font-bold">{cardData.fatherName}</div>
 
-              <div className="font-semibold">Designation:</div>
-              <div>{cardData.designation}</div>
+              <div className="font-bold">Designation:</div>
+              <div className="font-bold">{cardData.designation}</div>
 
-              <div className="font-semibold">Contractor:</div>
-              <div>{cardData.contractor}</div>
+              <div className="font-bold">Contractor:</div>
+              <div className="font-bold"> {cardData.contractor}</div>
+            </div>
+          </div>
+
+          {/* 🔹 Signature Section at Bottom */}
+          <div className="flex justify-between px-4 pb-2 mt-1 text-[10px]">
+            <div className="text-center w-1/2">
+              <p className="font-bold leading-tight">
+                Signature of Contractor with Stamp
+              </p>
+            </div>
+            <div className="text-center w-1/2">
+              <p className="font-bold leading-tight">Signature of Employee</p>
             </div>
           </div>
         </div>
@@ -226,7 +251,7 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
           className="relative w-[420px] bg-white border-2 border-gray-400 rounded-xl shadow-lg overflow-hidden text-[12px]"
         >
           {/* Blue Strip */}
-          <div className="bg-[#2FA4DA] h-12 w-full flex items-center justify-center">
+          <div className="bg-[#2FA4DA] h-10 w-full flex items-center justify-center">
             <p className="text-white text-sm font-semibold">Employee Details</p>
           </div>
 
@@ -261,35 +286,37 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
           <div className="p-4">
             {/* Top section: Details + QR */}
             <div className="flex justify-between items-start">
-              <div className="space-y-1">
-                <div>
-                  <span className="font-semibold">Aadhaar:</span>{" "}
-                  {cardData.adharCardNumber}
-                </div>
-                <div>
-                  <span className="font-semibold">Valid Till:</span>{" "}
+              <div className=" text-[12px] grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 items-center">
+                <div className="font-bold">Aadhaar:</div>
+                <div className="font-bold">{cardData.adharCardNumber}</div>
+
+                <div className="font-bold">Valid Till:</div>
+                <div className="font-bold">
                   {format(new Date(cardData.validTill), "dd/MM/yyyy")}
                 </div>
-                <div>
-                  <span className="font-semibold">Mobile:</span>{" "}
-                  {cardData.mobileNumber}
-                </div>
-                <div>
-                  <span className="font-semibold">Address:</span>{" "}
-                  {cardData.address}
-                </div>
+
+                <div className="font-bold">Mobile:</div>
+                <div className="font-bold">{cardData.mobileNumber}</div>
+
+                <div className="font-bold">Address:</div>
+                <div className="font-bold">{cardData.address}</div>
               </div>
+
               <QRCode value={cardUrl} size={72} />
             </div>
 
-            {/* Middle section */}
-            <p className="mt-3 text-[11px] text-gray-700 leading-tight">
-              {cardData.description ||
-                "Valid for Railway Station, Yard and Coaching Depot of JU, BME BGKT with tools and equipments."}
-            </p>
+            {/* Middle section: split description into two lines */}
+            <div className="mt-2 text-[11px] text-gray-700 leading-tight">
+              <p className="">{firstDescLine}</p>
+              {secondDescLine && <p className="mt-1">{secondDescLine}</p>}
+            </div>
 
-            {/* Bottom section */}
-            <div className="mt-1 flex justify-end">
+            {/* Bottom section: sign higher, name/designation below the sign (right side) */}
+            <div className="mt-3 flex justify-between items-start">
+              {/* Left column (keeps space and balance; you can put other info here if needed) */}
+              <div className="w-1/2"></div>
+
+              {/* Right column: Sign up, Name & Designation below */}
               <div className="text-center text-[10px] text-gray-600">
                 <p className="mb-1">Railway Official Sign</p>
                 {cardData.sign ? (
@@ -302,10 +329,12 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
                     crossOrigin="anonymous"
                   />
                 ) : (
-                  <div className="h-[40px] border-b border-gray-300 w-[80px] mb-2 mx-auto"></div>
+                  <div className="h-[40px] w-[80px] mb-2 mx-auto border-b border-gray-300"></div>
                 )}
-                <p>Name : ____________</p>
-                <p>Designation : ____________</p>
+
+                {/* Name & Designation come below the seal */}
+                <p className="font-bold text-left">Sign: _________</p>
+                <p className="font-bold text-left">Designation: {cardData.hirer}</p>
               </div>
             </div>
           </div>

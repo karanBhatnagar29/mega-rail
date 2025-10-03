@@ -10,6 +10,7 @@ export interface CardType {
   adharCardNumber: string;
   validTill: string; // ISO date string
   mobileNumber: string;
+  hirer:string
   address: string;
   photo?: string | undefined;
   seal?: string | undefined;

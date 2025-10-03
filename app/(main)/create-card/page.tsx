@@ -44,6 +44,7 @@ const formSchema = z.object({
   mobileNumber: z.string().length(10, "Mobile must be 10 digits"),
   address: z.string().min(1, "Address is required"),
   photo: z.any().optional(),
+  hirer: z.string().min(1, "Hirer is required"),
   sign: z.any().optional(),
   seal: z.any().optional(),
   divisionName: z.string().min(1, "Division name is required"),
@@ -71,6 +72,7 @@ export default function CreateCardPage() {
       designation: "",
       contractor: "",
       adharCardNumber: "",
+      hirer: "",
       validTill: undefined,
       mobileNumber: "",
       address: "",
@@ -101,7 +103,10 @@ export default function CreateCardPage() {
           key !== "seal" &&
           key !== "sign"
         ) {
-          formData.append(key, value as string);
+          formData.append(
+            key,
+            value === undefined || value === null ? "" : (value as string)
+          );
         }
       });
 
@@ -243,6 +248,26 @@ export default function CreateCardPage() {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="hirer"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hirer</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter hirer name"
+                        value={field.value || ""} // force controlled
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="contractor"
