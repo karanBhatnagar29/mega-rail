@@ -135,8 +135,19 @@ const CardPage = () => {
   };
 
   // 🔹 PDF Download
+  // 🔹 PDF Download (real physical size)
   const handleDownloadPDF = async (card: CardType) => {
-    const pdf = new jsPDF("p", "mm", "a4");
+    // Convert cm → mm (since jsPDF works in mm)
+    const pdfWidth = 9.398 * 10; // 93.98 mm
+    const pdfHeight = 5.842 * 10; // 58.42 mm
+    const cardWidth = 8.5725 * 10; // 85.725 mm
+    const cardHeight = 5.3975 * 10; // 53.975 mm
+
+    const pdf = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: [pdfWidth, pdfHeight],
+    });
 
     const addCardToPdf = async (elementId: string, page: number) => {
       const element = document.getElementById(elementId);
@@ -154,19 +165,10 @@ const CardPage = () => {
 
       element.style.transform = originalTransform;
 
-      const img = new window.Image();
-      img.src = dataUrl;
-      await new Promise((resolve) => (img.onload = resolve));
+      const x = (pdfWidth - cardWidth) / 2;
+      const y = (pdfHeight - cardHeight) / 2;
 
-      // center image
-      const cardWidth = 85; // mm
-      const cardHeight = (img.height * cardWidth) / img.width;
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const x = (pageWidth - cardWidth) / 2;
-      const y = (pageHeight - cardHeight) / 2;
-
-      if (page > 0) pdf.addPage();
+      if (page > 0) pdf.addPage([pdfWidth, pdfHeight], "landscape");
       pdf.addImage(dataUrl, "PNG", x, y, cardWidth, cardHeight);
     };
 
@@ -178,6 +180,7 @@ const CardPage = () => {
       console.error("PDF generation failed:", err);
     }
   };
+
   const handleDeleteClick = (id: string) => {
     setDeleteId(id); // open the confirm box
   };

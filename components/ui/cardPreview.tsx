@@ -12,22 +12,24 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const cardUrl = `http://13.202.200.98:3001/card/view/${cardData._id}`;
   // split description at the word 'depot' (case-insensitive)
-  const fullDesc =
-    cardData.description ||
-    "Valid for Railway Station, Yard and Coaching Depot of JU, BME BGKT with tools and equipments.";
-  const lowerDesc = fullDesc.toLowerCase();
-  const depotIdx = lowerDesc.indexOf("depot");
-  const firstDescLine =
-    depotIdx !== -1 ? fullDesc.slice(0, depotIdx + "depot".length) : fullDesc;
-  const secondDescLine =
-    depotIdx !== -1 ? fullDesc.slice(depotIdx + "depot".length).trim() : "";
 
   // 🔹 Download as PDF
+  // 🔹 Download as PDF (fixed cm size)
   const handleDownloadPDF = async () => {
     const buttons = document.querySelectorAll(".print-hide");
     buttons.forEach((b) => b.classList.add("hide-in-export"));
 
-    const pdf = new jsPDF("p", "mm", "a4");
+    // Convert cm → mm (since jsPDF uses mm)
+    const pdfWidth = 9.398 * 10; // 93.98 mm
+    const pdfHeight = 5.842 * 10; // 58.42 mm
+    const cardWidth = 8.5725 * 10; // 85.725 mm
+    const cardHeight = 5.3975 * 10; // 53.975 mm
+
+    const pdf = new jsPDF({
+      orientation: "landscape", // wider than tall
+      unit: "mm",
+      format: [pdfWidth, pdfHeight],
+    });
 
     const addCardToPdf = async (elementId: string, page: number) => {
       const element = document.getElementById(elementId);
@@ -39,18 +41,10 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
         pixelRatio: 2,
       });
 
-      const img = new window.Image();
-      img.src = dataUrl;
-      await new Promise((resolve) => (img.onload = resolve));
+      const x = (pdfWidth - cardWidth) / 2;
+      const y = (pdfHeight - cardHeight) / 2;
 
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const cardWidth = pageWidth * 0.7;
-      const cardHeight = (img.height * cardWidth) / img.width;
-
-      const x = (pageWidth - cardWidth) / 2;
-      const y = (pdf.internal.pageSize.getHeight() - cardHeight) / 2;
-
-      if (page > 0) pdf.addPage();
+      if (page > 0) pdf.addPage([pdfWidth, pdfHeight], "landscape");
       pdf.addImage(dataUrl, "PNG", x, y, cardWidth, cardHeight);
     };
 
@@ -146,7 +140,7 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
           className="w-[420px] bg-white border-2 border-gray-400 rounded-xl shadow-lg overflow-hidden"
         >
           {/* 🔹 Blue Header */}
-          <div className="bg-[#2FA4DA] px-3 py-2 border-b flex items-center text-white">
+          <div className="bg-[#2FA4DA]  px-3 py-2 border-b flex items-center text-white">
             <div className="w-16 h-16 flex items-center justify-center shrink-0">
               <img
                 src="/mega_rail.png"
@@ -202,7 +196,7 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
                   alt="Official Seal"
                   width={64}
                   height={64}
-                  className="absolute bottom-[-20px] left-1/2 -translate-x-1/2 w-16 h-16 object-contain z-10 opacity-80"
+                  className="absolute bottom-[-30px] left-1/2 -translate-x-1/2 w-16 h-16 object-contain z-10 opacity-80"
                   crossOrigin="anonymous"
                 />
               )}
@@ -251,18 +245,18 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
           className="relative w-[420px] bg-white border-2 border-gray-400 rounded-xl shadow-lg overflow-hidden text-[12px]"
         >
           {/* Blue Strip */}
-          <div className="bg-[#2FA4DA] h-10 w-full flex items-center justify-center">
+          <div className="bg-[#2FA4DA] h-8 w-full flex items-center justify-center">
             <p className="text-white text-sm font-semibold">Employee Details</p>
           </div>
 
           {/* Download button with click menu */}
-          <div className="absolute top-2 right-2 print-hide">
+          <div className="absolute top-0 right-2 print-hide">
             <div className="relative">
               <button
                 onClick={() => setMenuOpen((prev) => !prev)}
                 className="p-2 bg-blue-600 rounded-full shadow hover:bg-blue-700 text-white"
               >
-                <FileDown size={16} />
+                <FileDown size={12} />
               </button>
               {menuOpen && (
                 <div className="absolute right-0 mt-2 bg-white border rounded shadow-lg z-50">
@@ -285,8 +279,8 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
 
           <div className="p-4">
             {/* Top section: Details + QR */}
-            <div className="flex justify-between items-start">
-              <div className=" text-[12px] grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 items-center">
+            <div className="flex justify-between items-start flex-wrap gap-2">
+              <div className="text-[12px] grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 flex-1 min-w-0 break-words">
                 <div className="font-bold">Aadhaar:</div>
                 <div className="font-bold">{cardData.adharCardNumber}</div>
 
@@ -299,26 +293,30 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
                 <div className="font-bold">{cardData.mobileNumber}</div>
 
                 <div className="font-bold">Address:</div>
-                <div className="font-bold">{cardData.address}</div>
+                <div className="font-bold break-words whitespace-normal max-w-[250px]">
+                  {cardData.address}
+                </div>
               </div>
 
-              <QRCode value={cardUrl} size={72} />
+              <div className="flex-shrink-0">
+                <QRCode value={cardUrl} size={72} />
+              </div>
             </div>
 
-            {/* Middle section: split description into two lines */}
-            <div className="mt-2 text-[11px] text-gray-700 leading-tight">
-              <p className="">{firstDescLine}</p>
-              {secondDescLine && <p className="mt-1">{secondDescLine}</p>}
-            </div>
+            {/* Middle section */}
+            <p className="mt-2 text-[10px] font-bold ">
+              {cardData.description ||
+                "Valid for Railway Station, Yard and Coaching Depot of JU, BME BGKT with tools and equipments."}
+            </p>
 
             {/* Bottom section: sign higher, name/designation below the sign (right side) */}
-            <div className="mt-3 flex justify-between items-start">
+            <div className="mt-1 flex justify-between items-start">
               {/* Left column (keeps space and balance; you can put other info here if needed) */}
               <div className="w-1/2"></div>
 
               {/* Right column: Sign up, Name & Designation below */}
-              <div className="text-center text-[10px] text-gray-600">
-                <p className="mb-1">Railway Official Sign</p>
+              <div className="text-center text-[10px] ">
+                <p className=" font-bold">Railway Official Sign</p>
                 {cardData.sign ? (
                   <img
                     src={cardData.sign}
@@ -334,7 +332,9 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
 
                 {/* Name & Designation come below the seal */}
                 <p className="font-bold text-left">Sign: _________</p>
-                <p className="font-bold text-left">Designation: {cardData.hirer}</p>
+                <p className="font-bold text-left">
+                  Designation: {cardData.hirer}
+                </p>
               </div>
             </div>
           </div>

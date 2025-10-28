@@ -75,15 +75,16 @@ export default async function CardDetailsPage({
 
           {/* Content */}
           <div className="flex gap-4 p-4 relative">
-            {/* Photo + Seal */}
-            <div className="flex-shrink-0 relative">
+            {/* Profile Photo + Seal */}
+            <div className="flex-shrink-0 relative w-24 h-28">
               {card.photo ? (
-                <Image
+                <img
                   src={card.photo}
                   alt="Employee"
                   width={96}
                   height={112}
                   className="w-24 h-28 object-cover border-2 border-gray-400 rounded-md"
+                  crossOrigin="anonymous"
                 />
               ) : (
                 <div className="w-24 h-28 flex items-center justify-center border-2 border-gray-300 rounded-md text-gray-400 text-xs">
@@ -92,35 +93,40 @@ export default async function CardDetailsPage({
               )}
 
               {card.seal && (
-                <Image
+                <img
                   src={card.seal}
-                  alt="Seal"
-                  width={70}
-                  height={70}
-                  className="absolute -bottom-4 left-1/2 -translate-x-1/2 opacity-80"
+                  alt="Official Seal"
+                  width={64}
+                  height={64}
+                  className="absolute bottom-[-20px] left-1/2 -translate-x-1/2 w-16 h-16 object-contain z-10 opacity-80"
+                  crossOrigin="anonymous"
                 />
               )}
             </div>
 
             {/* Details */}
-            <div className="text-[12px] grid grid-cols-2 gap-x-2 gap-y-1 flex-1">
-              <div className="font-semibold">Card No:</div>
-              <div>{card.cardNo}</div>
+            <div className="text-[12px] grid grid-cols-[auto_1fr] gap-x-1 gap-y-1 flex-1">
+              <div className="font-bold">Card No:</div>
+              <div className="font-bold">{card.cardNo}</div>
 
-              <div className="font-semibold">Date Issue:</div>
-              <div>{format(new Date(card.dateOfIssue), "dd/MM/yyyy")}</div>
+              <div className="font-bold">Date Issue:</div>
+              <div className="font-bold">
+                {format(new Date(card.dateOfIssue), "dd/MM/yyyy")}
+              </div>
 
-              <div className="font-semibold">Employee:</div>
-              <div>{card.employeeName}</div>
+              <div className="font-bold">Employee:</div>
+              <div className="font-bold">{card.employeeName}</div>
 
-              <div className="font-semibold">Father:</div>
-              <div>{card.fatherName}</div>
+              <div className="font-bold">Father:</div>
+              <div className="font-bold">{card.fatherName}</div>
 
-              <div className="font-semibold">Designation:</div>
-              <div>{card.designation}</div>
+              <div className="font-bold">Designation:</div>
+              <div className="font-bold">{card.designation}</div>
 
-              <div className="font-semibold">Contractor:</div>
-              <div>{card.contractor}</div>
+              <div className="font-bold">Contractor:</div>
+              <div className="font-bold"> {card.contractor}</div>
+              <div className="font-bold">Hirer:</div>
+              <div className="font-bold">{card.hirer || "-"}</div>
             </div>
           </div>
 
@@ -151,9 +157,6 @@ export default async function CardDetailsPage({
           <p>
             <strong>Date Issue:</strong>{" "}
             {new Date(card.dateOfIssue).toLocaleDateString()}
-          </p>
-          <p className="col-span-2">
-            <strong>Hirer:</strong> {card.hirer}
           </p>
 
           <p>

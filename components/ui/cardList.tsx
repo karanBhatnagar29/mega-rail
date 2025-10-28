@@ -81,7 +81,7 @@ const Card = ({ card }: { card: CardType }) => {
 
             {/* Title & Info */}
             <div className="flex-1 text-center px-1 overflow-hidden">
-              <h3 className="text-[10px] font-bold uppercase truncate">
+              <h3 className="text-[10.5px] font-bold uppercase truncate">
                 {card.divisionName}
               </h3>
               <p className="text-[9px] font-bold truncate">{card.loaNumber}</p>
@@ -127,7 +127,7 @@ const Card = ({ card }: { card: CardType }) => {
                   <img
                     src={card.seal}
                     alt="Official Seal"
-                    className="absolute bottom-[-18px] left-1/2 -translate-x-1/2 w-14 h-14 object-contain z-10 opacity-80"
+                    className="absolute bottom-[-30px] left-1/2 -translate-x-1/2 w-14 h-14 object-contain z-10 opacity-80"
                     crossOrigin="anonymous"
                   />
                 )}
@@ -182,40 +182,40 @@ const Card = ({ card }: { card: CardType }) => {
           {/* Content */}
           <div className="p-3">
             {/* Top section: Details + QR */}
-            <div className="flex justify-between items-start">
-              <div className="space-y-0.5 text-[10px] text-gray-700">
-                <div>
-                  <span className="font-bold">Aadhaar:</span>{" "}
-                  <span className="font-bold"> {card.adharCardNumber}</span>
+            <div className="flex justify-between items-start flex-wrap gap-2">
+              <div className="text-[10px] grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 flex-1 min-w-0 break-words">
+                <div className="font-bold">Aadhaar:</div>
+                <div className="font-bold">{card.adharCardNumber}</div>
+
+                <div className="font-bold">Valid Till:</div>
+                <div className="font-bold">
+                  {format(new Date(card.validTill), "dd/MM/yyyy")}
                 </div>
-                <div>
-                  <span className="font-bold">Valid Till:</span>{" "}
-                  <span className="font-bold">
-                    {format(new Date(card.validTill), "dd/MM/yyyy")}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-bold">Mobile:</span>{" "}
-                  <span className="font-bold"> {card.mobileNumber}</span>
-                </div>
-                <div>
-                  <span className="font-bold">Address:</span>{" "}
-                  <span className="font-bold">{card.address}</span>
+
+                <div className="font-bold">Mobile:</div>
+                <div className="font-bold">{card.mobileNumber}</div>
+
+                <div className="font-bold">Address:</div>
+                <div className="font-bold break-words whitespace-normal max-w-[250px]">
+                  {card.address}
                 </div>
               </div>
-              <QRCode value={cardUrl} size={70} />
+
+              <div className="flex-shrink-0">
+                <QRCode value={cardUrl} size={72} />
+              </div>
             </div>
 
             {/* Middle section */}
-            <p className="mt-2 text-[10px] font-bold leading-tight">
+            <p className="mt-1 text-[10px] font-bold leading-tight">
               {card.description ||
                 "Valid for Railway Station, Yard and Coaching Depot of JU, BME BGKT with tools and equipments."}
             </p>
 
             {/* Bottom section */}
-            <div className="mt-2 flex justify-end">
-              <div className="text-center text-[9px] text-gray-600 w-[150px]">
-                <p className="mb-1">Railway Official Sign</p>
+            <div className="mt-1 flex justify-end">
+              <div className="text-center text-[9px] w-[150px]">
+                <p className="mb-1 font-bold">Railway Official Sign</p>
 
                 {/* Signature / Seal */}
                 <div className="h-[36px] flex items-center justify-center mb-1">
