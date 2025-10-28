@@ -81,10 +81,10 @@ const Card = ({ card }: { card: CardType }) => {
 
             {/* Title & Info */}
             <div className="flex-1 text-center px-1 overflow-hidden">
-              <h3 className="text-[10.5px] font-bold uppercase truncate">
+              <h3 className="text-[12.5px] font-bold uppercase truncate">
                 {card.divisionName}
               </h3>
-              <p className="text-[9px] font-bold truncate">{card.loaNumber}</p>
+              <p className="text-[12px] font-bold truncate">{card.loaNumber}</p>
               <p className="font-semibold text-xs truncate">
                 {card.profileName}
               </p>
@@ -93,16 +93,8 @@ const Card = ({ card }: { card: CardType }) => {
               </div>
             </div>
 
-            {/* Right Logo */}
-            <div className="w-12 h-12 flex items-center justify-center shrink-0">
-              <img
-                src="/railway_logo.png"
-                alt="Logo Right"
-                width={48}
-                height={48}
-                className="object-contain max-w-full max-h-full bg-white rounded-full p-1"
-              />
-            </div>
+        
+         
           </div>
 
           {/* Content */}
@@ -134,7 +126,7 @@ const Card = ({ card }: { card: CardType }) => {
               </div>
 
               {/* Details */}
-              <div className="text-[11px] grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 flex-1 leading-tight">
+              <div className="text-[11.5px] grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 flex-1 leading-tight">
                 <div className="font-bold">Card No:</div>
                 <div className="truncate font-bold">{card.cardNo}</div>
 
@@ -183,7 +175,7 @@ const Card = ({ card }: { card: CardType }) => {
           <div className="p-3">
             {/* Top section: Details + QR */}
             <div className="flex justify-between items-start flex-wrap gap-2">
-              <div className="text-[10px] grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 flex-1 min-w-0 break-words">
+              <div className="text-[11.5px] grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 flex-1 min-w-0 break-words">
                 <div className="font-bold">Aadhaar:</div>
                 <div className="font-bold">{card.adharCardNumber}</div>
 

@@ -151,16 +151,18 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
               />
             </div>
             <div className="flex-1 text-center px-2 overflow-hidden">
-              <h3 className="text-[10.5px] font-bold uppercase whitespace-nowrap text-ellipsis">
+              <h3 className="text-[12.5px] font-bold uppercase whitespace-nowrap text-ellipsis">
                 {cardData.divisionName}
               </h3>
-              <p className="text-[10px] font-bold">{cardData.loaNumber}</p>
-              <p className="font-bold text-sm">{cardData.profileName}</p>
+              <p className="text-[12px] font-bold uppercase">
+                {cardData.loaNumber}
+              </p>
+              <p className="font-bold  text-sm">{cardData.profileName}</p>
               <div className="bg-red-600 text-white text-xs font-bold py-1 rounded-md mt-1 inline-block px-3">
                 IDENTITY CARD
               </div>
             </div>
-            <div className="w-16 h-16 flex items-center justify-center shrink-0">
+            {/* <div className="w-16 h-16 flex items-center justify-center shrink-0">
               <img
                 src="/railway_logo.png"
                 alt="Logo Right"
@@ -168,7 +170,7 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
                 height={64}
                 className="object-contain max-w-full max-h-full bg-white rounded-full p-1"
               />
-            </div>
+            </div> */}
           </div>
 
           {/* Content */}
@@ -203,7 +205,7 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
             </div>
 
             {/* Details */}
-            <div className="text-[12px] grid grid-cols-[auto_1fr] gap-x-1 gap-y-1 flex-1">
+            <div className="text-[13px] grid grid-cols-[auto_1fr] gap-x-1 gap-y-1 flex-1">
               <div className="font-bold">Card No:</div>
               <div className="font-bold">{cardData.cardNo}</div>
 
@@ -222,7 +224,11 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
               <div className="font-bold">{cardData.designation}</div>
 
               <div className="font-bold">Contractor:</div>
-              <div className="font-bold"> {cardData.contractor}</div>
+              <div className="flex items-center  h-full">
+                <div className="font-bold text-[11px]">
+                  {cardData.contractor}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -280,7 +286,7 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
           <div className="p-4">
             {/* Top section: Details + QR */}
             <div className="flex justify-between items-start flex-wrap gap-2">
-              <div className="text-[12px] grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 flex-1 min-w-0 break-words">
+              <div className="text-[13px] grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 flex-1 min-w-0 break-words">
                 <div className="font-bold">Aadhaar:</div>
                 <div className="font-bold">{cardData.adharCardNumber}</div>
 
