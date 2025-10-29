@@ -141,15 +141,16 @@ export default function EmployeeCard({ cardData }: { cardData: CardType }) {
         >
           {/* 🔹 Blue Header */}
           <div className="bg-[#2FA4DA]  px-3 py-2 border-b flex items-center text-white">
-            <div className="w-16 h-16 flex items-center justify-center shrink-0">
+            <div className="w-13.5 h-14 flex items-center justify-center shrink-0 rounded-full bg-white ">
               <img
                 src="/mega_rail.png"
                 alt="Logo Left"
-                width={64}
-                height={64}
-                className="object-contain max-w-full max-h-full bg-white rounded-full p-1"
+                width={60}
+                height={60}
+                className="object-cover rounded-full"
               />
             </div>
+
             <div className="flex-1 text-center px-2 overflow-hidden">
               <h3 className="text-[12.5px] font-bold uppercase whitespace-nowrap text-ellipsis">
                 {cardData.divisionName}

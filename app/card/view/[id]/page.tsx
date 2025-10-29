@@ -62,15 +62,6 @@ export default async function CardDetailsPage({
             </div>
 
             {/* Right Logo */}
-            <div className="w-16 h-16 flex items-center justify-center shrink-0">
-              <Image
-                src="/railway_logo.png"
-                alt="Logo Right"
-                width={50}
-                height={64}
-                className="object-contain max-w-full max-h-full"
-              />
-            </div>
           </div>
 
           {/* Content */}
