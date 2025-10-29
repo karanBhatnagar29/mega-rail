@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 const links = [
   { href: "/create-card", label: "Create Card", icon: CreditCard },
   { href: "/cards", label: "All Cards", icon: List },
-  { href: "/settings", label: "setting", icon: Settings },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 interface SidebarProps {

@@ -51,11 +51,11 @@ export default async function CardDetailsPage({
 
             {/* Title & Info */}
             <div className="flex-1 text-center px-2 overflow-hidden">
-              <h3 className="text-[10.5px] font-bold uppercase text-blue-800 whitespace-nowrap text-ellipsis">
+              <h3 className="text-[12.5px] font-bold uppercase text-blue-800 whitespace-nowrap text-ellipsis">
                 {card.divisionName}
               </h3>
-              <p className="text-[10px] text-gray-600">{card.loaNumber}</p>
-              <p className="font-semibold text-sm">{card.profileName}</p>
+              <p className="text-[12px] ">{card.loaNumber}</p>
+              <p className="font-bold text-sm">{card.profileName}</p>
               <div className="bg-red-600 text-white text-xs font-bold py-1 rounded-md mt-1 inline-block px-3">
                 IDENTITY CARD
               </div>
