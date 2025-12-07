@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format } from "date-fns";
+import { format, parse, isValid as isValidDate } from "date-fns";
 import { Loader2 } from "lucide-react";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
@@ -31,38 +31,169 @@ import EmployeeCard from "@/components/ui/cardPreview";
 import Image from "next/image";
 import { CardType } from "@/types/card";
 import api from "@/lib/axios";
-// ✅ Validation Schema
+
+// ------------------ Validation Schema ------------------
+const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
+const bloodGroupSchema = z.union(
+  bloodGroups.map((bg) => z.literal(bg)) as [
+    z.ZodLiteral<(typeof bloodGroups)[number]>,
+    ...z.ZodLiteral<(typeof bloodGroups)[number]>[]
+  ]
+);
+
 const formSchema = z.object({
   cardNo: z.string().min(1, "Card number is required"),
-  dateOfIssue: z.date(),
+  dateOfIssue: z.date().optional(),
   employeeName: z.string().min(1, "Employee name is required"),
   fatherName: z.string().min(1, "Father name is required"),
   designation: z.string().min(1, "Designation is required"),
-  contractor: z.string().min(1, "Contractor is required"),
   adharCardNumber: z.string().length(12, "Aadhaar must be 12 digits"),
-  validTill: z.date(),
+  validTill: z.date().min(1, "Valid till date is required"),
   mobileNumber: z.string().length(10, "Mobile must be 10 digits"),
   address: z.string().min(1, "Address is required"),
   photo: z.any().optional(),
-  hirer: z.string().min(1, "Hirer is required"),
-  sign: z.any().optional(),
-  seal: z.any().optional(),
-  divisionName: z.string().min(1, "Division name is required"),
-  loaNumber: z.string().min(1, "LOA number is required"),
+  hirer: z.string().min(1, "Designation authority is required"),
+  divisionName: z.string().min(1, "Issuing Authority name is required"),
   profileName: z.string().min(1, "Profile name is required"),
-
-  // 🔹 New field
-  description: z.string().optional(),
+  bloodGroup: bloodGroupSchema,
+  policeVerification: z.date().optional(),
 });
+
+type FormValues = z.infer<typeof formSchema>;
+
+// --------------- Smart Date Parser ---------------
+function parseSmartDate(value: string): Date | undefined {
+  const raw = value.trim();
+  if (!raw) return undefined;
+
+  const patterns = [
+    "dd/MM/yyyy",
+    "d/M/yyyy",
+    "dd-MM-yyyy",
+    "d-M-yyyy",
+    "yyyy-MM-dd",
+    "dd.MM.yyyy",
+  ];
+
+  for (const p of patterns) {
+    const d = parse(raw, p, new Date());
+    if (isValidDate(d)) return d;
+  }
+
+  // Fallback: Date.parse (handles "Jan 12, 2025" etc.)
+  const ts = Date.parse(raw);
+  if (!Number.isNaN(ts)) return new Date(ts);
+
+  return undefined;
+}
+
+// --------------- Reusable Smart Date Field ---------------
+type SmartDateFieldProps = {
+  label: string;
+  placeholder?: string;
+  field: {
+    value?: Date;
+    onChange: (value?: Date) => void;
+    onBlur?: () => void;
+    name: string;
+  };
+};
+
+function SmartDateField({ label, placeholder, field }: SmartDateFieldProps) {
+  // Local text state (what user types)
+  const [inputValue, setInputValue] = useState<string>(
+    field.value ? format(field.value, "dd/MM/yyyy") : ""
+  );
+
+  // Jab form ya calendar se Date change ho, tab hi sync karo
+  useEffect(() => {
+    if (field.value instanceof Date) {
+      setInputValue(format(field.value, "dd/MM/yyyy"));
+    }
+    // NOTE: else mein inputValue reset nahi kar rahe, taaki typing disturb na ho
+  }, [field.value]);
+
+  // Typing ke time sirf text change
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  // Blur pe smart parse
+  const handleBlur = () => {
+    const val = inputValue.trim();
+
+    if (!val) {
+      // empty -> clear form value
+      field.onChange(undefined);
+    } else {
+      const parsed = parseSmartDate(val);
+      if (parsed) {
+        field.onChange(parsed);
+      }
+      // agar parse nahi hua:
+      // - user ka typed text rehne do (inputValue)
+      // - form value change nahi karte (validation submit pe fail karegi)
+    }
+
+    field.onBlur && field.onBlur();
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    field.onChange(date);
+    if (date) {
+      setInputValue(format(date, "dd/MM/yyyy"));
+    } else {
+      setInputValue("");
+    }
+  };
+
+  return (
+    <FormItem>
+      <FormLabel>{label}</FormLabel>
+      <div className="flex gap-2">
+        <FormControl>
+          <Input
+            value={inputValue}
+            onChange={handleInputChange}
+            onBlur={handleBlur}
+            name={field.name}
+            placeholder={placeholder ?? "DD/MM/YYYY or pick from calendar"}
+          />
+        </FormControl>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              className="whitespace-nowrap"
+            >
+              📅 Pick
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="p-0">
+            <Calendar
+              mode="single"
+              selected={field.value}
+              onSelect={handleDateSelect}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+      <p className="text-xs text-muted-foreground mt-1">
+        You can type like: <b>12/01/2025</b>, <b>12-01-2025</b>,{" "}
+        <b>2025-01-12</b>
+      </p>
+      <FormMessage />
+    </FormItem>
+  );
+}
 
 export default function CreateCardPage() {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
-  const [cardData, setCardData] = useState<CardType | null>(null); // ✅ replaced any
+  const [cardData, setCardData] = useState<CardType | null>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedSeal, setSelectedSeal] = useState<string | null>(null);
-  const [selectedSign, setSelectedSign] = useState<string | null>(null);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       cardNo: "",
@@ -70,55 +201,43 @@ export default function CreateCardPage() {
       employeeName: "",
       fatherName: "",
       designation: "",
-      contractor: "",
       adharCardNumber: "",
       hirer: "",
       validTill: undefined,
       mobileNumber: "",
       address: "",
-      divisionName: "NORTH WESTERN RAILWAY JODHPUR DIVISION",
-      loaNumber: "LOA NO. 02 of 2023-24/010010700779589",
+      divisionName: "",
       profileName: "M/s. Megarail Power Projects LLP",
-      description:
-        "Valid for Railway station, Yard and Coaching Depot of JU, BME BGKT with tools and equipments", // 🔹 default empty
+      bloodGroup: "O+",
+      policeVerification: undefined,
     },
   });
 
   const token = Cookies.get("auth_token");
 
-  // ✅ Submit Handler
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: FormValues) {
     try {
       setLoading(true);
 
       const formData = new FormData();
 
-      // append text fields
       Object.entries(values).forEach(([key, value]) => {
+        if (key === "policeVerification" && value instanceof Date) {
+          formData.append(key, format(value, "yyyy-MM-dd"));
+          return;
+        }
+
         if (value instanceof Date) {
           formData.append(key, value.toISOString());
-        } else if (
-          value &&
-          key !== "photo" &&
-          key !== "seal" &&
-          key !== "sign"
-        ) {
-          formData.append(
-            key,
-            value === undefined || value === null ? "" : (value as string)
-          );
+        } else if (value !== undefined && value !== null && key !== "photo") {
+          const toAppend =
+            typeof value === "boolean" ? String(value) : String(value);
+          formData.append(key, toAppend);
         }
       });
 
-      // append file
-      if (values.photo instanceof File) {
-        formData.append("photo", values.photo);
-      }
-      if (values.sign instanceof File) {
-        formData.append("sign", values.sign);
-      }
-      if (values.seal instanceof File) {
-        formData.append("seal", values.seal);
+      if (values.photo && (values.photo as File) instanceof File) {
+        formData.append("photo", values.photo as File);
       }
 
       const response = await api.post(
@@ -132,7 +251,21 @@ export default function CreateCardPage() {
         }
       );
 
-      setCardData(response.data);
+      const normalizedData = {
+        ...response.data,
+        policeVerification: response.data.policeVerification
+          ? String(response.data.policeVerification)
+          : "",
+        dateOfIssue: response.data.dateOfIssue
+          ? String(response.data.dateOfIssue)
+          : "",
+        validTill: response.data.validTill
+          ? String(response.data.validTill)
+          : "",
+      };
+
+      setCardData(normalizedData);
+
       toast.success("✅ Card created successfully!", {
         description: "Your card has been generated and saved.",
       });
@@ -171,35 +304,20 @@ export default function CreateCardPage() {
                   </FormItem>
                 )}
               />
+
+              {/* SMART date field for Date of Issue */}
               <FormField
                 control={form.control}
                 name="dateOfIssue"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Date of Issue</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start"
-                        >
-                          {field.value
-                            ? format(field.value, "PPP")
-                            : "Pick a date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="p-0">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
+                  <SmartDateField
+                    label="Date of Issue"
+                    field={field}
+                    placeholder="DD/MM/YYYY or pick from calendar"
+                  />
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="employeeName"
@@ -248,16 +366,17 @@ export default function CreateCardPage() {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="hirer"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hirer</FormLabel>
+                    <FormLabel>Designation of issuing authority</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Enter hirer name"
-                        value={field.value || ""} // force controlled
+                        placeholder="Enter Designation of issuing authority name"
+                        value={field.value || ""}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
                         name={field.name}
@@ -270,43 +389,21 @@ export default function CreateCardPage() {
 
               <FormField
                 control={form.control}
-                name="contractor"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Contractor</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter contractor name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
                 name="divisionName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Division Name</FormLabel>
+                    <FormLabel>Issuing Authority Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter division name" {...field} />
+                      <Input
+                        placeholder="Enter issuing Authority name"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="loaNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>LOA Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter LOA number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
               <FormField
                 control={form.control}
                 name="profileName"
@@ -320,6 +417,7 @@ export default function CreateCardPage() {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="adharCardNumber"
@@ -333,33 +431,17 @@ export default function CreateCardPage() {
                   </FormItem>
                 )}
               />
+
+              {/* SMART date field for Valid Till */}
               <FormField
                 control={form.control}
                 name="validTill"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Valid Till</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start"
-                        >
-                          {field.value
-                            ? format(field.value, "PPP")
-                            : "Pick a date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="p-0">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
+                  <SmartDateField
+                    label="Valid Till"
+                    field={field}
+                    placeholder="DD/MM/YYYY or pick from calendar"
+                  />
                 )}
               />
             </div>
@@ -404,28 +486,53 @@ export default function CreateCardPage() {
             </div>
           </div>
 
-          {/* --- Description Section --- */}
+          {/* --- Additional Information Section --- */}
           <div>
             <h3 className="text-lg font-semibold mb-4 border-b pb-2">
               Additional Information
             </h3>
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter description or notes"
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="bloodGroup"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Blood Group</FormLabel>
+                    <FormControl>
+                      <select
+                        value={field.value}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        className="w-full px-3 py-2 border rounded-md"
+                      >
+                        <option value="">Select blood group</option>
+                        {bloodGroups.map((bg) => (
+                          <option key={bg} value={bg}>
+                            {bg}
+                          </option>
+                        ))}
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* SMART date field for Police Verification */}
+              <FormField
+                control={form.control}
+                name="policeVerification"
+                render={({ field }) => (
+                  <SmartDateField
+                    label="Police Verification Date"
+                    field={field}
+                    placeholder="DD/MM/YYYY or pick from calendar"
+                  />
+                )}
+              />
+            </div>
           </div>
 
           {/* --- Upload Section --- */}
@@ -434,7 +541,6 @@ export default function CreateCardPage() {
               Uploads
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* File Upload Item */}
               {[
                 {
                   name: "photo",
@@ -442,23 +548,11 @@ export default function CreateCardPage() {
                   preview: selectedPhoto,
                   setPreview: setSelectedPhoto,
                 },
-                {
-                  name: "seal",
-                  label: "Supervisor",
-                  preview: selectedSeal,
-                  setPreview: setSelectedSeal,
-                },
-                {
-                  name: "sign",
-                  label: "Railway Supervisor",
-                  preview: selectedSign,
-                  setPreview: setSelectedSign,
-                },
               ].map((item) => (
                 <FormField
                   key={item.name}
                   control={form.control}
-                  name={item.name as "photo" | "seal" | "sign"}
+                  name={item.name as "photo"}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{item.label}</FormLabel>

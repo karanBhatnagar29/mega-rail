@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import { Mail, KeyRound, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 import api from "@/lib/axios";
+import axios from "axios";
 
 const ForgetPasswordPage = () => {
   const [email, setEmail] = useState("");
@@ -30,8 +31,12 @@ const ForgetPasswordPage = () => {
       });
       toast.success("OTP sent successfully to your email 📩");
       setStep("otp");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to send OTP");
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        toast.error(err.response?.data?.message || "Failed to send OTP");
+      } else {
+        toast.error("Something went wrong");
+      }
     } finally {
       setLoading(false);
     }
@@ -53,8 +58,12 @@ const ForgetPasswordPage = () => {
       });
       toast.success("OTP verified successfully ✅");
       setStep("password");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Invalid or expired OTP");
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        toast.error(err.response?.data?.message || "Invalid or expired OTP");
+      } else {
+        toast.error("Something went wrong");
+      }
     } finally {
       setLoading(false);
     }
@@ -89,8 +98,12 @@ const ForgetPasswordPage = () => {
       setNewPassword("");
       setConfirmPassword("");
       setStep("email");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to reset password");
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        toast.error(err.response?.data?.message || "Failed to reset password");
+      } else {
+        toast.error("Something went wrong");
+      }
     } finally {
       setLoading(false);
     }

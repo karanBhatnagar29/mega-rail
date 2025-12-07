@@ -19,4 +19,6 @@ export interface CardType {
   loaNumber: string;
   profileName: string;
   description?: string;
+  bloodGroup: string;
+ policeVerification: boolean;
 }
