@@ -43,7 +43,7 @@ export default function Card({
 }: Props) {
   const [flipped, setFlipped] = useState(false);
 
-  const cardUrl = `http://13.202.200.98:3001/card/view/${card._id}`;
+  const cardUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/card/view/${card._id}`;
 
   const ORANGE_COLOR = "#ff6a00";
   const fallbackImage = "/mnt/data/dcc878a1-b711-4227-a41e-c9020e9bdae9.png";
