@@ -8,7 +8,7 @@ import * as htmlToImage from "html-to-image";
 
 export default function EmployeeCard({ cardData }: { cardData: CardType }) {
   const [exporting, setExporting] = useState(false);
-  const cardUrl = `https://megarailpowerproject.vercel.app/card/view/${cardData._id}`;
+  const cardUrl = `http://13.202.200.98:3001/card/view/${cardData._id}`;
 
   const ORANGE_COLOR = "#ff6a00";
   const fallbackImage = "/mnt/data/dcc878a1-b711-4227-a41e-c9020e9bdae9.png";
